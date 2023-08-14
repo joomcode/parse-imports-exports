@@ -5,7 +5,7 @@
   "author": "uid11",
   "bugs": "https://github.com/uid11/parse-imports-exports/issues",
   "dependencies": {
-    "parse-statements": "0.0.7"
+    "parse-statements": "0.0.8"
   },
   "devDependencies": {
     "prettier": ">=3",
