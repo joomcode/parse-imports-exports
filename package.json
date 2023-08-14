@@ -39,7 +39,7 @@
     "build": "tsc",
     "prettier": "prettier --cache --cache-strategy=content --write . !package-lock.json",
     "test": "export _START=$(date +%s%3N) && npm run prettier && npm run build && node ./index.spec.js",
-    "prepublishOnly": "npm test && rm types.js"
+    "prepublishOnly": "npm test && rm index.spec.js types.js"
   },
   "sideEffects": false,
   "types": "index.d.ts"
