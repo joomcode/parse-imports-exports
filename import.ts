@@ -1,4 +1,4 @@
-import {addError, parseFrom, spacesRegexp, stripComments} from './utils';
+import {addError, parseFrom, spacesRegExp, stripComments} from './utils';
 
 import type {MutableImportsExports, Names, NamedImport, NamespaceImport, OnParse} from './types';
 
@@ -33,7 +33,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   const parsedImport: NamedImport | NamespaceImport = {start: importStart, end: importEnd};
 
-  unparsed = unparsed.slice(0, index).trim().replace(spacesRegexp, ' ');
+  unparsed = unparsed.slice(0, index).trim().replace(spacesRegExp, ' ');
 
   let isTypeImport = false;
 

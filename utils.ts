@@ -21,7 +21,7 @@ export const addError = (
 /**
  * Regexp that find all backslashes.
  */
-const backslashesRegexp = /\\+/g;
+const backslashesRegExp = /\\+/g;
 
 /**
  * Hash with start characters of identifiers.
@@ -102,7 +102,7 @@ export const parseFrom = (
   let from = sourceWithString.slice(index + 1);
 
   if (hasBackslash) {
-    from = from.replace(backslashesRegexp, stripFirstCharacter);
+    from = from.replace(backslashesRegExp, stripFirstCharacter);
   }
 
   return {from, index};
@@ -128,7 +128,7 @@ export const parseIdentifier = (sourceStartsWithIdentifier: string): number => {
 /**
  * Regexp that find all spaces.
  */
-export const spacesRegexp = /\s+/g;
+export const spacesRegExp = /\s+/g;
 
 /**
  * Strips comments from string interval from source.

@@ -1,4 +1,4 @@
-import {addError, parseFrom, spacesRegexp, stripComments} from './utils';
+import {addError, parseFrom, spacesRegExp, stripComments} from './utils';
 
 import type {MutableImportsExports, Names, NamedExport, OnParse, TypeNamedExport} from './types';
 
@@ -69,7 +69,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     isTypeExport = true;
   }
 
-  const namesString = unparsed.trim().replace(spacesRegexp, ' ');
+  const namesString = unparsed.trim().replace(spacesRegExp, ' ');
   const namesList = namesString.split(',');
 
   let names: Names | undefined;
