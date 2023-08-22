@@ -96,24 +96,13 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let reexports = importsExports[key];
 
     if (reexports === undefined) {
-      reexports = importsExports[key] = {};
+      importsExports[key] = reexports = {__proto__: null} as Exclude<typeof reexports, undefined>;
     }
 
     let reexportsList = reexports[from];
 
     if (Array.isArray(reexportsList) === false) {
-      reexportsList = [];
-
-      if (from === '__proto__') {
-        Object.defineProperty(reexports, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: reexportsList,
-          writable: true,
-        });
-      } else {
-        reexports[from] = reexportsList;
-      }
+      reexports[from] = reexportsList = [];
     }
 
     (reexportsList as object[]).push(parsedReexport);
@@ -139,26 +128,17 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {typeExports} = importsExports;
 
     if (typeExports === undefined) {
-      typeExports = importsExports.typeExports = {};
-    } else if (
-      typeof typeExports[identifier] === 'object' &&
-      (identifier !== '__proto__' || Object.prototype.hasOwnProperty.call(typeExports, '__proto__'))
-    ) {
+      importsExports.typeExports = typeExports = {__proto__: null} as Exclude<
+        typeof typeExports,
+        undefined
+      >;
+    } else if (identifier in typeExports) {
       addError(importsExports, `Duplicate exported type \`${identifier}\``, exportStart);
 
       return;
     }
 
-    if (identifier === '__proto__') {
-      Object.defineProperty(typeExports, '__proto__', {
-        configurable: true,
-        enumerable: true,
-        value: {start: exportStart, end: exportEnd},
-        writable: true,
-      });
-    } else {
-      typeExports[identifier] = {start: exportStart, end: exportEnd};
-    }
+    typeExports[identifier] = {start: exportStart, end: exportEnd};
 
     return;
   }
@@ -195,24 +175,16 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {interfaceExports} = importsExports;
 
     if (interfaceExports === undefined) {
-      interfaceExports = importsExports.interfaceExports = {};
+      importsExports.interfaceExports = interfaceExports = {__proto__: null} as Exclude<
+        typeof interfaceExports,
+        undefined
+      >;
     }
 
     let exportsList = interfaceExports[name];
 
     if (Array.isArray(exportsList) === false) {
-      exportsList = [];
-
-      if (name === '__proto__') {
-        Object.defineProperty(interfaceExports, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: exportsList,
-          writable: true,
-        });
-      } else {
-        interfaceExports[name] = exportsList;
-      }
+      interfaceExports[name] = exportsList = [];
     }
 
     (exportsList as object[]).push({start: exportStart, end: exportEnd});
@@ -238,24 +210,16 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {namespaceExports} = importsExports;
 
     if (namespaceExports === undefined) {
-      namespaceExports = importsExports.namespaceExports = {};
+      importsExports.namespaceExports = namespaceExports = {__proto__: null} as Exclude<
+        typeof namespaceExports,
+        undefined
+      >;
     }
 
     let exportsList = namespaceExports[name];
 
     if (Array.isArray(exportsList) === false) {
-      exportsList = [];
-
-      if (name === '__proto__') {
-        Object.defineProperty(namespaceExports, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: exportsList,
-          writable: true,
-        });
-      } else {
-        namespaceExports[name] = exportsList;
-      }
+      namespaceExports[name] = exportsList = [];
     }
 
     (exportsList as object[]).push({start: exportStart, end: exportEnd});
@@ -339,24 +303,15 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   let {declarationExports} = importsExports;
 
   if (declarationExports === undefined) {
-    importsExports.declarationExports = declarationExports = {};
-  } else if (
-    typeof declarationExports[name!] === 'object' &&
-    (name !== '__proto__' || Object.prototype.hasOwnProperty.call(declarationExports, '__proto__'))
-  ) {
+    importsExports.declarationExports = declarationExports = {__proto__: null} as Exclude<
+      typeof declarationExports,
+      undefined
+    >;
+  } else if (name in declarationExports) {
     addError(importsExports, `Duplicate exported declaration \`${kind} ${name}\``, exportStart);
 
     return;
   }
 
-  if (name === '__proto__') {
-    Object.defineProperty(declarationExports, '__proto__', {
-      configurable: true,
-      enumerable: true,
-      value: {start: exportStart, end: exportEnd, kind: kind!},
-      writable: true,
-    });
-  } else {
-    declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};
-  }
+  declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};
 };

@@ -113,11 +113,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
 
     if (isType) {
       if (types === undefined) {
-        types = {};
-      } else if (
-        typeof types[name] === 'object' &&
-        (name !== '__proto__' || Object.prototype.hasOwnProperty.call(types, '__proto__'))
-      ) {
+        types = {__proto__: null as unknown as object};
+      } else if (name in types) {
         addError(
           importsExports,
           `Duplicate exported type \`${name}\` ${
@@ -129,23 +126,11 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
         return;
       }
 
-      if (name === '__proto__') {
-        Object.defineProperty(types, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: nameObject,
-          writable: true,
-        });
-      } else {
-        types[name] = nameObject;
-      }
+      types[name] = nameObject;
     } else {
       if (names === undefined) {
-        names = {};
-      } else if (
-        typeof names[name] === 'object' &&
-        (name !== '__proto__' || Object.prototype.hasOwnProperty.call(names, '__proto__'))
-      ) {
+        names = {__proto__: null as unknown as object};
+      } else if (name in names) {
         addError(
           importsExports,
           `Duplicate exported name \`${name}\` ${
@@ -157,16 +142,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
         return;
       }
 
-      if (name === '__proto__') {
-        Object.defineProperty(names, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: nameObject,
-          writable: true,
-        });
-      } else {
-        names[name] = nameObject;
-      }
+      names[name] = nameObject;
     }
   }
 
@@ -192,24 +168,13 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     let reexports = importsExports[key];
 
     if (reexports === undefined) {
-      reexports = importsExports[key] = {};
+      importsExports[key] = reexports = {__proto__: null} as Exclude<typeof reexports, undefined>;
     }
 
     let reexportsList = reexports[maybeFrom];
 
     if (Array.isArray(reexportsList) === false) {
-      reexportsList = [];
-
-      if (maybeFrom === '__proto__') {
-        Object.defineProperty(reexports, '__proto__', {
-          configurable: true,
-          enumerable: true,
-          value: reexportsList,
-          writable: true,
-        });
-      } else {
-        reexports[maybeFrom] = reexportsList;
-      }
+      reexports[maybeFrom] = reexportsList = [];
     }
 
     (reexportsList as object[]).push(namedExport);

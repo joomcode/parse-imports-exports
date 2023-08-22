@@ -114,11 +114,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
         if (isType) {
           if (types === undefined) {
-            types = {};
-          } else if (
-            typeof types[name] === 'object' &&
-            (name !== '__proto__' || Object.prototype.hasOwnProperty.call(types, '__proto__'))
-          ) {
+            types = {__proto__: null as unknown as object};
+          } else if (name in types) {
             addError(
               importsExports,
               `Duplicate imported type \`${name}\` for import from \`${from}\``,
@@ -128,23 +125,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return;
           }
 
-          if (name === '__proto__') {
-            Object.defineProperty(types, '__proto__', {
-              configurable: true,
-              enumerable: true,
-              value: nameObject,
-              writable: true,
-            });
-          } else {
-            types[name] = nameObject;
-          }
+          types[name] = nameObject;
         } else {
           if (names === undefined) {
-            names = {};
-          } else if (
-            typeof names[name] === 'object' &&
-            (name !== '__proto__' || Object.prototype.hasOwnProperty.call(names, '__proto__'))
-          ) {
+            names = {__proto__: null as unknown as object};
+          } else if (name in names) {
             addError(
               importsExports,
               `Duplicate imported name \`${name}\` for import from \`${from}\``,
@@ -154,16 +139,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return;
           }
 
-          if (name === '__proto__') {
-            Object.defineProperty(names, '__proto__', {
-              configurable: true,
-              enumerable: true,
-              value: nameObject,
-              writable: true,
-            });
-          } else {
-            names[name] = nameObject;
-          }
+          names[name] = nameObject;
         }
       }
 
@@ -213,24 +189,13 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
   let imports = importsExports[key];
 
   if (imports === undefined) {
-    imports = importsExports[key] = {};
+    importsExports[key] = imports = {__proto__: null} as Exclude<typeof imports, undefined>;
   }
 
   let importsList = imports[from];
 
   if (Array.isArray(importsList) === false) {
-    importsList = [];
-
-    if (from === '__proto__') {
-      Object.defineProperty(imports, '__proto__', {
-        configurable: true,
-        enumerable: true,
-        value: importsList,
-        writable: true,
-      });
-    } else {
-      imports[from] = importsList;
-    }
+    imports[from] = importsList = [];
   }
 
   (importsList as object[]).push(parsedImport);

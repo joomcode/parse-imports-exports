@@ -411,7 +411,7 @@ assertEqualExceptNumbers(
 const {namedExports} = importsExports;
 
 assert(
-  namedExports![namedExports!.length - 1]!.names!.hasOwnProperty('__proto__'),
+  Object.prototype.hasOwnProperty.call(namedExports![namedExports!.length - 1]!.names, '__proto__'),
   'parses named export "__proto__"',
 );
 
