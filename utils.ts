@@ -11,8 +11,7 @@ export const addError = (
   let {errors} = importsExports;
 
   if (errors === undefined) {
-    errors = {};
-    importsExports.errors = errors;
+    importsExports.errors = errors = {};
   }
 
   errors[index] = errors[index] === undefined ? message : `${errors[index]}\n${message}`;

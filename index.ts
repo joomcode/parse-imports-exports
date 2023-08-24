@@ -46,6 +46,8 @@ const parse = createParseFunction<MutableImportsExports>({
 
 export type {ImportsExports};
 
+export type {Kind} from './types';
+
 /**
  * Parses `import`/`export` in ECMAScript/TypeScript syntax.
  */
