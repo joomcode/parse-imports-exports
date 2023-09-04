@@ -1,15 +1,15 @@
 {
   "name": "parse-imports-exports",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Fast and easy parser for declarations of import and export in ECMAScript/TypeScript",
   "author": "uid11",
   "bugs": "https://github.com/uid11/parse-imports-exports/issues",
   "dependencies": {
-    "parse-statements": "0.0.9"
+    "parse-statements": "0.0.10"
   },
   "devDependencies": {
     "prettier": ">=3",
-    "typescript": ">=5.1"
+    "typescript": ">=5.2"
   },
   "exports": {
     ".": "./index.js"

@@ -6,8 +6,7 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": ".",
-    "module": "nodenext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
@@ -19,8 +18,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2018",
-    "types": [],
-    "verbatimModuleSyntax": true
+    "types": []
   },
   "files": ["index.spec.ts"]
 }
