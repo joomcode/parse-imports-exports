@@ -20,15 +20,31 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   {start: exportStart, end: unparsedStart, comments},
   {start: unparsedEnd, end: exportEnd},
 ) => {
+  let isDeclare = false;
   let isType = false;
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
+
+  if (unparsed.startsWith('declare ')) {
+    isDeclare = true;
+    unparsed = unparsed.slice(8).trim();
+  }
 
   if (unparsed.startsWith('type ')) {
     isType = true;
     unparsed = unparsed.slice(5).trim();
   }
 
+  const modifiers = `${isDeclare ? 'declare ' : ''}${isType ? 'type ' : ''}`;
+
   if (unparsed[0] === '*') {
+    if (isDeclare) {
+      return addError(
+        importsExports,
+        `Cannot declare star export (\`export ${modifiers}* ... from ...\`)`,
+        exportStart,
+      );
+    }
+
     let namespace: string | undefined;
 
     if (unparsed.startsWith('* as ')) {
@@ -37,13 +53,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       const spaceIndex = unparsed.indexOf(' ');
 
       if (spaceIndex < 0) {
-        addError(
+        return addError(
           importsExports,
-          `Cannot find namespace of \`export ${isType ? 'type ' : ''}* as ... from ...\` statement`,
+          `Cannot find namespace of \`export ${modifiers}* as ... from ...\` statement`,
           exportStart,
         );
-
-        return;
       }
 
       namespace = unparsed.slice(0, spaceIndex);
@@ -57,9 +71,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     const quoteCharacter = unparsed[unparsed.length - 1];
 
     if (quoteCharacter !== "'" && quoteCharacter !== '"') {
-      addError(importsExports, 'Cannot find end of `from` string literal of reexport', exportStart);
-
-      return;
+      return addError(
+        importsExports,
+        'Cannot find end of `from` string literal of reexport',
+        exportStart,
+      );
     }
 
     unparsed = unparsed.slice(0, -1);
@@ -67,13 +83,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     const {from, index} = parseFrom(quoteCharacter, unparsed);
 
     if (index < 0) {
-      addError(
+      return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
         exportStart,
       );
-
-      return;
     }
 
     const parsedReexport: NamespaceReexport | StarReexport = {start: exportStart, end: exportEnd};
@@ -113,13 +127,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   const identifierIndex = parseIdentifier(unparsed);
 
   if (identifierIndex === 0) {
-    addError(
+    return addError(
       importsExports,
-      `Cannot parse declaration identifier of \`export ${isType ? 'type ' : ''}...\` statement`,
+      `Cannot parse declaration identifier of \`export ${modifiers}...\` statement`,
       exportStart,
     );
-
-    return;
   }
 
   const identifier = unparsed.slice(0, identifierIndex);
@@ -133,21 +145,29 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         undefined
       >;
     } else if (identifier in typeExports) {
-      addError(importsExports, `Duplicate exported type \`${identifier}\``, exportStart);
-
-      return;
+      return addError(importsExports, `Duplicate exported type \`${identifier}\``, exportStart);
     }
 
     typeExports[identifier] = {start: exportStart, end: exportEnd};
+
+    if (isDeclare) {
+      typeExports[identifier]!.isDeclare = true;
+    }
 
     return;
   }
 
   if (identifier === 'default') {
-    if (importsExports.defaultExport !== undefined) {
-      addError(importsExports, 'Duplicate default export', exportStart);
+    if (isDeclare) {
+      return addError(
+        importsExports,
+        `Cannot export default with declare (\`export ${modifiers}default ...\`)`,
+        exportStart,
+      );
+    }
 
-      return;
+    if (importsExports.defaultExport !== undefined) {
+      return addError(importsExports, 'Duplicate default export', exportStart);
     }
 
     importsExports.defaultExport = {start: exportStart, end: exportEnd};
@@ -161,13 +181,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     const nameIndex = parseIdentifier(unparsed);
 
     if (nameIndex === 0) {
-      addError(
+      return addError(
         importsExports,
-        'Cannot parse interface identifier of `export interface ...` statement',
+        `Cannot parse interface identifier of \`export ${modifiers}interface ...\` statement`,
         exportStart,
       );
-
-      return;
     }
 
     const name = unparsed.slice(0, nameIndex);
@@ -187,7 +205,16 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       interfaceExports[name] = exportsList = [];
     }
 
-    (exportsList as object[]).push({start: exportStart, end: exportEnd});
+    const interfaceExport: Exclude<typeof exportsList, undefined>[number] = {
+      start: exportStart,
+      end: exportEnd,
+    };
+
+    if (isDeclare) {
+      interfaceExport.isDeclare = true;
+    }
+
+    (exportsList as object[]).push(interfaceExport);
 
     return;
   }
@@ -196,13 +223,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     const nameIndex = parseIdentifier(unparsed);
 
     if (nameIndex === 0) {
-      addError(
+      return addError(
         importsExports,
-        'Cannot parse namespace identifier of `export namespace ...` statement',
+        `Cannot parse namespace identifier of \`export ${modifiers}namespace ...\` statement`,
         exportStart,
       );
-
-      return;
     }
 
     const name = unparsed.slice(0, nameIndex);
@@ -222,7 +247,16 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       namespaceExports[name] = exportsList = [];
     }
 
-    (exportsList as object[]).push({start: exportStart, end: exportEnd});
+    const namespaceExport: Exclude<typeof exportsList, undefined>[number] = {
+      start: exportStart,
+      end: exportEnd,
+    };
+
+    if (isDeclare) {
+      namespaceExport.isDeclare = true;
+    }
+
+    (exportsList as object[]).push(namespaceExport);
 
     return;
   }
@@ -239,29 +273,38 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       const nameIndex = parseIdentifier(unparsed);
 
       if (nameIndex === 0) {
-        addError(
+        return addError(
           importsExports,
           `Cannot parse \`${identifier}\` identifier of \`export ${identifier} ...\` statement`,
           exportStart,
         );
-
-        return;
       }
 
       kind = identifier;
+
+      if (isDeclare) {
+        kind = `declare ${kind}`;
+      }
+
       name = unparsed.slice(0, nameIndex);
       break;
 
     // @ts-expect-error
     case 'async':
+      if (isDeclare) {
+        return addError(
+          importsExports,
+          `Cannot export async function with declare (\`export ${modifiers}async ...\`)`,
+          exportStart,
+        );
+      }
+
       if (unparsed.startsWith('function') === false) {
-        addError(
+        return addError(
           importsExports,
           'Cannot parse async function in `export async ...` statement',
           exportStart,
         );
-
-        return;
       }
 
       isAsync = true;
@@ -269,6 +312,14 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
     case 'function':
       if (unparsed[0] === '*') {
+        if (isDeclare) {
+          return addError(
+            importsExports,
+            `Cannot export generator function with declare (\`export ${modifiers}function* ...\`)`,
+            exportStart,
+          );
+        }
+
         unparsed = unparsed.slice(1).trim();
         kind = 'function*';
       } else {
@@ -277,27 +328,29 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
       if (isAsync) {
         kind = `async ${kind}`;
+      } else if (isDeclare) {
+        kind = 'declare function';
       }
 
       const functionNameIndex = parseIdentifier(unparsed);
 
       if (functionNameIndex === 0) {
-        addError(
+        return addError(
           importsExports,
           `Cannot parse \`${kind}\` identifier of \`export ${kind} ...\` statement`,
           exportStart,
         );
-
-        return;
       }
 
       name = unparsed.slice(0, functionNameIndex);
       break;
 
     default:
-      addError(importsExports, `Cannot parse \`export ${identifier} ...\` statement`, exportStart);
-
-      return;
+      return addError(
+        importsExports,
+        `Cannot parse \`export ${identifier} ...\` statement`,
+        exportStart,
+      );
   }
 
   let {declarationExports} = importsExports;
@@ -308,9 +361,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       undefined
     >;
   } else if (name in declarationExports) {
-    addError(importsExports, `Duplicate exported declaration \`${kind} ${name}\``, exportStart);
-
-    return;
+    return addError(
+      importsExports,
+      `Duplicate exported declaration \`${kind} ${name}\``,
+      exportStart,
+    );
   }
 
   declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};

@@ -26,9 +26,9 @@ const assertEqualExceptNumbers = (a: object, b: object, message: string) => {
     if (aJson[index] !== bJson[index]) {
       assert(
         false,
-        `${message}:\n${aJson.slice(index - 20, index + 60)}\n${bJson.slice(
-          index - 20,
-          index + 60,
+        `${message}:\n${aJson.slice(index - 30, index + 70)}\n${bJson.slice(
+          index - 30,
+          index + 70,
         )}`,
       );
     }
@@ -41,6 +41,9 @@ const ok = (message: string) => console.log(`\x1B[32m[OK]\x1B[39m ${message}`);
 const startTestsTime = Date.now();
 
 ok(`Build passed in ${startTestsTime - Number(process.env._START)}ms!`);
+
+const start = 0;
+const end = 0;
 
 assert(typeof parseImportsExports('') === 'object', 'returns an object for empty source');
 
@@ -71,7 +74,7 @@ const singleImport = parseImportsExports('qux\nimport {foo} from "bar"');
 
 assertEqualExceptNumbers(
   singleImport,
-  {namedImports: {bar: [{start: 0, end: 0, names: {foo: {}}}]}},
+  {namedImports: {bar: [{start, end, names: {foo: {}}}]}},
   'returns expected single import',
 );
 
@@ -79,7 +82,7 @@ const singleNamedExport = parseImportsExports('qux\nexport {foo, type bar as qux
 
 assertEqualExceptNumbers(
   singleNamedExport,
-  {namedExports: [{start: 0, end: 0, names: {foo: {}}, types: {qux: {by: 'bar'}}}]},
+  {namedExports: [{start, end, names: {foo: {}}, types: {qux: {by: 'bar'}}}]},
   'returns expected single export',
 );
 
@@ -231,6 +234,8 @@ export  namespace {foo: number;};
 
 export  const;
 
+export declare * from "quux";
+
 export async fnction f () {}
 export function * () {};
 export  async  function(arg) { return arg; }
@@ -242,6 +247,25 @@ export let  y = 1
 export {type __proto__};
 export { type propertyIsEnumerable } from 'properties'
 
+export declare default 3;
+
+export declare type D = void;
+
+export declare interface DI {}
+
+export declare namespace DN {foo: string};
+
+export declare const   corge: string;
+export declare  class DC {}
+export declare let dl: number
+export  declare var dv: bigint
+
+export declare async function adf(): Promise<void>;
+
+export declare function* gdf(): void;
+
+export declare function df(): void;
+
 import {foo};
 
 export { toString };
@@ -252,14 +276,14 @@ assertEqualExceptNumbers(
   importsExports,
   {
     namedImports: {
-      "ba'z": [{start: 0, end: 0, names: {foo: {}, bar: {}}}],
-      jquery: [{start: 0, end: 0}],
-      PROTO: [{start: 0, end: 0}],
-      constructor: [{start: 0, end: 0}],
+      "ba'z": [{start, end, names: {foo: {}, bar: {}}}],
+      jquery: [{start, end}],
+      PROTO: [{start, end}],
+      constructor: [{start, end}],
       garply: [
         {
-          start: 0,
-          end: 0,
+          start,
+          end,
           names: {
             asBaz: {by: 'baz'},
             grault: {},
@@ -268,81 +292,90 @@ assertEqualExceptNumbers(
           types: {qux: {}, asWaldo: {by: 'waldo'}, asQuux: {by: 'quux'}},
           default: 'bar',
         },
-        {start: 0, end: 0, default: 'Garply'},
+        {start, end, default: 'Garply'},
       ],
-      '': [{start: 0, end: 0}],
-      waldo: [{start: 0, end: 0, default: 'name'}],
+      '': [{start, end}],
+      waldo: [{start, end, default: 'name'}],
       prototype: [
-        {start: 0, end: 0, names: {PROTO: {by: 'PROTO'}}},
-        {start: 0, end: 0, names: {__lookupGetter__: {by: 'hasOwnProperty'}}},
-        {start: 0, end: 0, names: {PROTO: {}, prototype: {by: 'PROTO'}}},
+        {start, end, names: {PROTO: {by: 'PROTO'}}},
+        {start, end, names: {__lookupGetter__: {by: 'hasOwnProperty'}}},
+        {start, end, names: {PROTO: {}, prototype: {by: 'PROTO'}}},
       ],
     },
     typeNamedImports: {
-      quux: [{start: 0, end: 0, default: 'qux'}],
-      waldo: [{start: 0, end: 0, default: 'corge'}],
+      quux: [{start, end, default: 'qux'}],
+      waldo: [{start, end, default: 'corge'}],
       '@types/prototype': [
-        {start: 0, end: 0, names: {PROTO: {}}},
-        {start: 0, end: 0, names: {isPrototypeOf: {}}},
+        {start, end, names: {PROTO: {}}},
+        {start, end, names: {isPrototypeOf: {}}},
       ],
     },
     namespaceImports: {
-      './maths.js': [{start: 0, end: 0, namespace: 'math'}],
-      quux: [{start: 0, end: 0, namespace: 'bar', default: 'foo'}],
+      './maths.js': [{start, end, namespace: 'math'}],
+      quux: [{start, end, namespace: 'bar', default: 'foo'}],
       prototype: [
-        {start: 0, end: 0, namespace: 'PROTO', default: 'PROTO'},
-        {start: 0, end: 0, namespace: 'toString', default: 'propertyIsEnumerable'},
+        {start, end, namespace: 'PROTO', default: 'PROTO'},
+        {start, end, namespace: 'toString', default: 'propertyIsEnumerable'},
       ],
     },
     typeNamespaceImports: {
-      react: [{start: 0, end: 0, namespace: 'React'}],
+      react: [{start, end, namespace: 'React'}],
     },
     namedExports: [
-      {start: 0, end: 0, names: {foo: {}, bar: {}}, types: {baz: {}}},
-      {start: 0, end: 0},
-      {start: 0, end: 0, names: {waldo: {by: 'baz'}}, types: {bar: {by: 'foo'}}},
-      {start: 0, end: 0, types: {PROTO: {}}},
-      {start: 0, end: 0, names: {toString: {}}},
-      {start: 0, end: 0, names: {PROTO: {}}},
+      {start, end, names: {foo: {}, bar: {}}, types: {baz: {}}},
+      {start, end},
+      {start, end, names: {waldo: {by: 'baz'}}, types: {bar: {by: 'foo'}}},
+      {start, end, types: {PROTO: {}}},
+      {start, end, names: {toString: {}}},
+      {start, end, names: {PROTO: {}}},
     ],
     namedReexports: {
-      typescript: [
-        {start: 0, end: 0, names: {ModuleKind: {}}, types: {Target: {by: 'ScriptTarget'}}},
-      ],
-      properties: [{start: 0, end: 0, types: {propertyIsEnumerable: {}}}],
+      typescript: [{start, end, names: {ModuleKind: {}}, types: {Target: {by: 'ScriptTarget'}}}],
+      properties: [{start, end, types: {propertyIsEnumerable: {}}}],
     },
     typeNamedReexports: {
-      prettier: [{start: 0, end: 0, names: {CPL: {by: 'Compiler'}}}],
+      prettier: [{start, end, names: {CPL: {by: 'Compiler'}}}],
     },
     declarationExports: {
-      garply: {start: 0, end: 0, kind: 'const'},
-      SomeClass: {start: 0, end: 0, kind: 'class'},
-      callback: {start: 0, end: 0, kind: 'let'},
-      f: {start: 0, end: 0, kind: 'function'},
-      numbersGenerator: {start: 0, end: 0, kind: 'function*'},
-      asyncCallback: {start: 0, end: 0, kind: 'async function'},
-      asyncGenerator: {start: 0, end: 0, kind: 'async function*'},
-      PROTO: {start: 0, end: 0, kind: 'const'},
-      valueOf: {start: 0, end: 0, kind: 'var' as const},
-      toLocaleString: {start: 0, end: 0, kind: 'async function' as const},
-      y: {start: 0, end: 0, kind: 'var'},
+      garply: {start, end, kind: 'const'},
+      SomeClass: {start, end, kind: 'class'},
+      callback: {start, end, kind: 'let'},
+      f: {start, end, kind: 'function'},
+      numbersGenerator: {start, end, kind: 'function*'},
+      asyncCallback: {start, end, kind: 'async function'},
+      asyncGenerator: {start, end, kind: 'async function*'},
+      PROTO: {start, end, kind: 'const'},
+      valueOf: {start, end, kind: 'var' as const},
+      toLocaleString: {start, end, kind: 'async function' as const},
+      y: {start, end, kind: 'var'},
+      corge: {start, end, kind: 'declare const'},
+      DC: {start, end, kind: 'declare class'},
+      dl: {start, end, kind: 'declare let'},
+      dv: {start, end, kind: 'declare var'},
+      df: {start, end, kind: 'declare function'},
     },
     interfaceExports: {
       I: [
-        {start: 0, end: 0},
-        {start: 0, end: 0},
+        {start, end},
+        {start, end},
       ],
-      PROTO: [{start: 0, end: 0}],
-      __defineSetter__: [{start: 0, end: 0}],
+      PROTO: [{start, end}],
+      __defineSetter__: [{start, end}],
+      DI: [{start, end, isDeclare: true}],
     },
-    typeExports: {T: {start: 0, end: 0}, SomeType: {start: 0, end: 0}},
+    typeExports: {
+      T: {start, end},
+      SomeType: {start, end},
+      D: {start, end, isDeclare: true},
+    },
     namespaceExports: {
       N: [
-        {start: 0, end: 0},
-        {start: 0, end: 0},
+        {start, end},
+        {start, end},
       ],
-      PROTO: [{start: 0, end: 0}],
-      __defineGetter__: [{start: 0, end: 0}],
+      PROTO: [{start, end}],
+      __defineGetter__: [{start, end}],
+      DN: [{start, end, isDeclare: true}],
     },
     errors: {
       0: 'Cannot find namespace of `export type * as ... from ...` statement',
@@ -374,35 +407,39 @@ assertEqualExceptNumbers(
       26: 'Cannot parse interface identifier of `export interface ...` statement',
       27: 'Cannot parse namespace identifier of `export namespace ...` statement',
       28: 'Cannot parse `const` identifier of `export const ...` statement',
-      29: 'Cannot parse async function in `export async ...` statement',
-      30: 'Cannot parse `function*` identifier of `export function* ...` statement',
-      31: 'Cannot parse `async function` identifier of `export async function ...` statement',
-      32: 'Cannot parse `export sconst ...` statement',
-      33: 'Duplicate exported declaration `let y`',
-      34: 'Cannot find end of `import` statement',
+      29: 'Cannot declare star export (`export declare * ... from ...`)',
+      30: 'Cannot parse async function in `export async ...` statement',
+      31: 'Cannot parse `function*` identifier of `export function* ...` statement',
+      32: 'Cannot parse `async function` identifier of `export async function ...` statement',
+      33: 'Cannot parse `export sconst ...` statement',
+      34: 'Duplicate exported declaration `let y`',
+      35: 'Cannot export default with declare (`export declare default ...`)',
+      36: 'Cannot export async function with declare (`export declare async ...`)',
+      37: 'Cannot export generator function with declare (`export declare function* ...`)',
+      38: 'Cannot find end of `import` statement',
     },
-    starReexports: {quux: [{start: 0, end: 0}]},
+    starReexports: {quux: [{start, end}]},
     typeNamespaceReexports: {
       qux: [
-        {start: 0, end: 0, namespace: 'Qux'},
-        {start: 0, end: 0, namespace: 'AlsoQux'},
+        {start, end, namespace: 'Qux'},
+        {start, end, namespace: 'AlsoQux'},
       ],
       bar: [
-        {start: 0, end: 0, namespace: 'PROTO'},
-        {start: 0, end: 0, namespace: '__lookupSetter__'},
+        {start, end, namespace: 'PROTO'},
+        {start, end, namespace: '__lookupSetter__'},
       ],
     },
     typeStarReexports: {
       bar: [
-        {start: 0, end: 0},
-        {start: 0, end: 0},
+        {start, end},
+        {start, end},
       ],
     },
-    namespaceReexports: {qux: [{start: 0, end: 0, namespace: 'FullQux'}]},
-    defaultExport: {start: 0, end: 0},
+    namespaceReexports: {qux: [{start, end, namespace: 'FullQux'}]},
+    defaultExport: {start, end},
     typeNamedExports: [
-      {start: 0, end: 0},
-      {start: 0, end: 0, names: {corge: {by: 'garply'}}},
+      {start, end},
+      {start, end, names: {corge: {by: 'garply'}}},
     ],
   } satisfies typeof importsExports,
   'returns expected results and errors for all sort of statements',

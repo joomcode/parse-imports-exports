@@ -26,9 +26,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
   const {from, index} = parseFrom(quoteCharacter, unparsed);
 
   if (index < 0) {
-    addError(importsExports, 'Cannot find start of `from` string literal of import', importStart);
-
-    return;
+    return addError(
+      importsExports,
+      'Cannot find start of `from` string literal of import',
+      importStart,
+    );
   }
 
   const parsedImport: NamedImport | NamespaceImport = {start: importStart, end: importEnd};
@@ -60,13 +62,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
       unparsed = unparsed.slice(0, braceIndex);
 
       if (braceCloseIndex < 0) {
-        addError(
+        return addError(
           importsExports,
           `Cannot find end of imports list (\`}\`) for import from \`${from}\``,
           importStart,
         );
-
-        return;
       }
 
       namesString = namesString.slice(0, braceCloseIndex).trim();
@@ -89,15 +89,13 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
         if (name.startsWith('type ')) {
           if (isTypeImport) {
-            addError(
+            return addError(
               importsExports,
               `Cannot use \`type\` modifier in \`import type\` statement for type \`${name.slice(
                 5,
               )}\` for import from \`${from}\``,
               importStart,
             );
-
-            return;
           }
 
           isType = true;
@@ -116,13 +114,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
           if (types === undefined) {
             types = {__proto__: null as unknown as object};
           } else if (name in types) {
-            addError(
+            return addError(
               importsExports,
               `Duplicate imported type \`${name}\` for import from \`${from}\``,
               importStart,
             );
-
-            return;
           }
 
           types[name] = nameObject;
@@ -130,13 +126,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
           if (names === undefined) {
             names = {__proto__: null as unknown as object};
           } else if (name in names) {
-            addError(
+            return addError(
               importsExports,
               `Duplicate imported name \`${name}\` for import from \`${from}\``,
               importStart,
             );
-
-            return;
           }
 
           names[name] = nameObject;
@@ -168,15 +162,13 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   if (unparsed !== '') {
     if (isTypeImport && key === 'namespaceImports') {
-      addError(
+      return addError(
         importsExports,
         `Cannot use default \`${unparsed}\` and namespace \`${
           (parsedImport as NamespaceImport).namespace
         }\` together in \`import type\` statement for import from \`${from}\``,
         importStart,
       );
-
-      return;
     }
 
     parsedImport.default = unparsed;

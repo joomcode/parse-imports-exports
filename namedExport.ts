@@ -35,13 +35,11 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     const {from, index} = parseFrom(quote[0]!, unparsed);
 
     if (index < 0) {
-      addError(
+      return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
         exportStart,
       );
-
-      return;
     }
 
     maybeFrom = from;
@@ -50,13 +48,11 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     const braceCloseIndex = unparsed.lastIndexOf('}');
 
     if (braceCloseIndex < 0) {
-      addError(
+      return addError(
         importsExports,
         `Cannot find end of reexports list (\`}\`) for reexport from \`${maybeFrom}\``,
         exportStart,
       );
-
-      return;
     }
 
     unparsed = unparsed.slice(0, braceCloseIndex);
@@ -88,15 +84,13 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
 
     if (name.startsWith('type ')) {
       if (isTypeExport) {
-        addError(
+        return addError(
           importsExports,
           `Cannot use \`type\` modifier in \`export type {...}\` statement for type \`${name.slice(
             5,
           )}\`${maybeFrom === undefined ? '' : ` for reexport from \`${maybeFrom}\``}`,
           exportStart,
         );
-
-        return;
       }
 
       isType = true;
@@ -115,15 +109,13 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       if (types === undefined) {
         types = {__proto__: null as unknown as object};
       } else if (name in types) {
-        addError(
+        return addError(
           importsExports,
           `Duplicate exported type \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
           exportStart,
         );
-
-        return;
       }
 
       types[name] = nameObject;
@@ -131,15 +123,13 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       if (names === undefined) {
         names = {__proto__: null as unknown as object};
       } else if (name in names) {
-        addError(
+        return addError(
           importsExports,
           `Duplicate exported name \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
           exportStart,
         );
-
-        return;
       }
 
       names[name] = nameObject;

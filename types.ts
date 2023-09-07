@@ -19,7 +19,7 @@ type DeepReadonly<Type> = {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>
 /**
  * Parsed JSON presentation of `export interface ...` statement.
  */
-type InterfaceExport = Position;
+type InterfaceExport = Position & {isDeclare?: true};
 
 /**
  * Parsed JSON presentation of `export {...} from ...` statement.
@@ -29,7 +29,7 @@ type NamedReexport = Position & {names?: Names; types?: Names};
 /**
  * Parsed JSON presentation of `export namespace ...` statement.
  */
-type NamespaceExport = Position;
+type NamespaceExport = Position & {isDeclare?: true};
 
 /**
  * Position of import, export or reexport statement in source file.
@@ -39,7 +39,7 @@ type Position = {start: number; end: number};
 /**
  * Parsed JSON presentation of `export type ...` statement.
  */
-type TypeExport = Position;
+type TypeExport = Position & {isDeclare?: true};
 
 /**
  * Parsed JSON presentation of `import type {...} from ...` statement.
@@ -79,6 +79,11 @@ export type Kind =
   | 'async function*'
   | 'class'
   | 'const'
+  | 'declare const'
+  | 'declare class'
+  | 'declare function'
+  | 'declare let'
+  | 'declare var'
   | 'function'
   | 'function*'
   | 'let'
