@@ -266,6 +266,25 @@ export declare function* gdf(): void;
 
 export declare function df(): void;
 
+export abstract class AC {}
+export  declare  abstract  class  DAC  {};
+
+export declare abstractclass Quux {}
+export abstract EAC {}
+export declare abstract DEAC {}
+
+export enum En {}
+export  declare  enum  Den {};
+export  const enum Cen {A = 3}
+export  declare const enum  Dcen  {}
+
+export enum {}
+export declare enum {};
+export const enum {}
+export declare const enum {};
+export constenum EC {}
+export declare constenum DEC {}
+
 import {foo};
 
 export { toString };
@@ -353,6 +372,12 @@ assertEqualExceptNumbers(
       dl: {start, end, kind: 'declare let'},
       dv: {start, end, kind: 'declare var'},
       df: {start, end, kind: 'declare function'},
+      AC: {start, end, kind: 'abstract class'},
+      DAC: {start, end, kind: 'declare abstract class'},
+      En: {start, end, kind: 'enum'},
+      Den: {start, end, kind: 'declare enum'},
+      Cen: {start, end, kind: 'const enum'},
+      Dcen: {start, end, kind: 'declare const enum'},
     },
     interfaceExports: {
       I: [
@@ -416,7 +441,16 @@ assertEqualExceptNumbers(
       35: 'Cannot export default with declare (`export declare default ...`)',
       36: 'Cannot export async function with declare (`export declare async ...`)',
       37: 'Cannot export generator function with declare (`export declare function* ...`)',
-      38: 'Cannot find end of `import` statement',
+      38: 'Cannot parse `export declare abstractclass ...` statement',
+      39: 'Cannot parse declaration of abstract class of `export abstract ...` statement',
+      40: 'Cannot parse declaration of abstract class of `export declare abstract ...` statement',
+      41: 'Cannot parse `enum` identifier of `export enum ...` statement',
+      42: 'Cannot parse `enum` identifier of `export declare enum ...` statement',
+      43: 'Cannot parse identifier of `export const enum ...` statement',
+      44: 'Cannot parse identifier of `export declare const enum ...` statement',
+      45: 'Cannot parse `export constenum ...` statement',
+      46: 'Cannot parse `export declare constenum ...` statement',
+      47: 'Cannot find end of `import` statement',
     },
     starReexports: {quux: [{start, end}]},
     typeNamespaceReexports: {

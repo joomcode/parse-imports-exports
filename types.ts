@@ -75,15 +75,21 @@ export type ImportsExports = DeepReadonly<MutableImportsExports>;
  * Kind of exported declaration.
  */
 export type Kind =
+  | 'abstract class'
   | 'async function'
   | 'async function*'
   | 'class'
   | 'const'
-  | 'declare const'
+  | 'const enum'
+  | 'declare abstract class'
   | 'declare class'
+  | 'declare const'
+  | 'declare const enum'
+  | 'declare enum'
   | 'declare function'
   | 'declare let'
   | 'declare var'
+  | 'enum'
   | 'function'
   | 'function*'
   | 'let'

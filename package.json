@@ -1,6 +1,6 @@
 {
   "name": "parse-imports-exports",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Fast and easy parser for declarations of import and export in ECMAScript/TypeScript",
   "author": "uid11",
   "bugs": "https://github.com/uid11/parse-imports-exports/issues",

@@ -268,6 +268,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   switch (identifier) {
     case 'const':
     case 'class':
+    case 'enum':
     case 'let':
     case 'var':
       const nameIndex = parseIdentifier(unparsed);
@@ -275,7 +276,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       if (nameIndex === 0) {
         return addError(
           importsExports,
-          `Cannot parse \`${identifier}\` identifier of \`export ${identifier} ...\` statement`,
+          `Cannot parse \`${identifier}\` identifier of \`export ${modifiers}${identifier} ...\` statement`,
           exportStart,
         );
       }
@@ -287,6 +288,59 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       }
 
       name = unparsed.slice(0, nameIndex);
+
+      if (identifier === 'const' && name === 'enum') {
+        unparsed = unparsed.slice(4).trim();
+
+        const constEnumNameIndex = parseIdentifier(unparsed);
+
+        if (constEnumNameIndex === 0) {
+          return addError(
+            importsExports,
+            `Cannot parse identifier of \`export ${modifiers}const enum ...\` statement`,
+            exportStart,
+          );
+        }
+
+        kind = 'const enum';
+
+        if (isDeclare) {
+          kind = `declare ${kind}`;
+        }
+
+        name = unparsed.slice(0, constEnumNameIndex);
+      }
+
+      break;
+
+    case 'abstract':
+      if (!unparsed.startsWith('class ')) {
+        return addError(
+          importsExports,
+          `Cannot parse declaration of abstract class of \`export ${modifiers}abstract ...\` statement`,
+          exportStart,
+        );
+      }
+
+      unparsed = unparsed.slice(5).trim();
+
+      const abstractClassNameIndex = parseIdentifier(unparsed);
+
+      if (abstractClassNameIndex === 0) {
+        return addError(
+          importsExports,
+          `Cannot parse \`${identifier}\` identifier of \`export ${modifiers}abstract class ${identifier} ...\` statement`,
+          exportStart,
+        );
+      }
+
+      kind = 'abstract class';
+
+      if (isDeclare) {
+        kind = `declare ${kind}`;
+      }
+
+      name = unparsed.slice(0, abstractClassNameIndex);
       break;
 
     // @ts-expect-error
@@ -337,7 +391,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       if (functionNameIndex === 0) {
         return addError(
           importsExports,
-          `Cannot parse \`${kind}\` identifier of \`export ${kind} ...\` statement`,
+          `Cannot parse \`${kind}\` identifier of \`export ${modifiers}${kind} ...\` statement`,
           exportStart,
         );
       }
@@ -348,7 +402,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     default:
       return addError(
         importsExports,
-        `Cannot parse \`export ${identifier} ...\` statement`,
+        `Cannot parse \`export ${modifiers}${identifier} ...\` statement`,
         exportStart,
       );
   }
