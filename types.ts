@@ -32,6 +32,11 @@ type NamedReexport = Position & {names?: Names; types?: Names};
 type NamespaceExport = Position & {isDeclare?: true};
 
 /**
+ * Path to a module or package after the `from` keyword.
+ */
+type Path = string;
+
+/**
  * Position of import, export or reexport statement in source file.
  */
 type Position = {start: number; end: number};
@@ -44,7 +49,7 @@ type TypeExport = Position & {isDeclare?: true};
 /**
  * Parsed JSON presentation of `import type {...} from ...` statement.
  */
-type TypeNamedImport = Position & {default?: string; names?: Names};
+type TypeNamedImport = Position & {default?: Name; names?: Names};
 
 /**
  * Parsed JSON presentation of `export type {...} from ...` statement.
@@ -54,12 +59,12 @@ type TypeNamedReexport = Position & {names?: Names};
 /**
  * Parsed JSON presentation of `import type * as ...` statement.
  */
-type TypeNamespaceImport = Position & {namespace: string};
+type TypeNamespaceImport = Position & {namespace: Name};
 
 /**
  * Parsed JSON presentation of `export type * as ... from ...` statement.
  */
-type TypeNamespaceReexport = Position & {namespace: string};
+type TypeNamespaceReexport = Position & {namespace: Name};
 
 /**
  * Parsed JSON presentation of `export type * from ...` statement.
@@ -85,10 +90,16 @@ export type Kind =
   | 'declare class'
   | 'declare const'
   | 'declare const enum'
+  | 'declare destructuring const'
+  | 'declare destructuring let'
+  | 'declare destructuring var'
   | 'declare enum'
   | 'declare function'
   | 'declare let'
   | 'declare var'
+  | 'destructuring const'
+  | 'destructuring let'
+  | 'destructuring var'
   | 'enum'
   | 'function'
   | 'function*'
@@ -102,7 +113,7 @@ export type MutableImportsExports = {
   /**
    * `export (class|const|function|var...) ...`.
    */
-  declarationExports?: Record<string, DeclarationExport>;
+  declarationExports?: Record<Name, DeclarationExport>;
   /**
    * `export default ...`.
    */
@@ -111,7 +122,7 @@ export type MutableImportsExports = {
   /**
    * `export interface ...`.
    */
-  interfaceExports?: Record<string, readonly InterfaceExport[]>;
+  interfaceExports?: Record<Name, readonly InterfaceExport[]>;
   /**
    * `export {...}`.
    */
@@ -119,31 +130,31 @@ export type MutableImportsExports = {
   /**
    * `import {...} from ...`.
    */
-  namedImports?: Record<string, readonly NamedImport[]>;
+  namedImports?: Record<Path, readonly NamedImport[]>;
   /**
    * `export {...} from ...`.
    */
-  namedReexports?: Record<string, readonly NamedReexport[]>;
+  namedReexports?: Record<Name, readonly NamedReexport[]>;
   /**
    * `export namespace ...`.
    */
-  namespaceExports?: Record<string, readonly NamespaceExport[]>;
+  namespaceExports?: Record<Name, readonly NamespaceExport[]>;
   /**
    * `import * as ...`.
    */
-  namespaceImports?: Record<string, readonly NamespaceImport[]>;
+  namespaceImports?: Record<Path, readonly NamespaceImport[]>;
   /**
    * `export * as ... from ...`.
    */
-  namespaceReexports?: Record<string, readonly NamespaceReexport[]>;
+  namespaceReexports?: Record<Path, readonly NamespaceReexport[]>;
   /**
    * `export * from ...`.
    */
-  starReexports?: Record<string, readonly StarReexport[]>;
+  starReexports?: Record<Path, readonly StarReexport[]>;
   /**
    * `export type ...`.
    */
-  typeExports?: Record<string, TypeExport>;
+  typeExports?: Record<Name, TypeExport>;
   /**
    * `export type {...}`.
    */
@@ -151,24 +162,29 @@ export type MutableImportsExports = {
   /**
    * `import type {...} from ...`.
    */
-  typeNamedImports?: Record<string, readonly TypeNamedImport[]>;
+  typeNamedImports?: Record<Path, readonly TypeNamedImport[]>;
   /**
    * `export type {...} from ...`.
    */
-  typeNamedReexports?: Record<string, readonly TypeNamedReexport[]>;
+  typeNamedReexports?: Record<Path, readonly TypeNamedReexport[]>;
   /**
    * `import type * as ...`.
    */
-  typeNamespaceImports?: Record<string, readonly TypeNamespaceImport[]>;
+  typeNamespaceImports?: Record<Path, readonly TypeNamespaceImport[]>;
   /**
    * `export type * as ... from ...`.
    */
-  typeNamespaceReexports?: Record<string, readonly TypeNamespaceReexport[]>;
+  typeNamespaceReexports?: Record<Path, readonly TypeNamespaceReexport[]>;
   /**
    * `export type * from ...`.
    */
-  typeStarReexports?: Record<string, readonly TypeStarReexport[]>;
+  typeStarReexports?: Record<Path, readonly TypeStarReexport[]>;
 };
+
+/**
+ * Imported or exported name (identifier).
+ */
+export type Name = string;
 
 /**
  * Parsed JSON presentation of `export {...}` statement.
@@ -178,22 +194,22 @@ export type NamedExport = Position & {names?: Names; types?: Names};
 /**
  * Parsed JSON presentation of `import {...} from ...` statement.
  */
-export type NamedImport = Position & {default?: string; names?: Names; types?: Names};
+export type NamedImport = Position & {default?: Name; names?: Names; types?: Names};
 
 /**
  * Parsed JSON presentation of names in `import`/`export` statements.
  */
-export type Names = Record<string, {by?: string}>;
+export type Names = Record<Name, {by?: Name}>;
 
 /**
  * Parsed JSON presentation of `import * as ...` statement.
  */
-export type NamespaceImport = Position & {default?: string; namespace: string};
+export type NamespaceImport = Position & {default?: Name; namespace: Name};
 
 /**
  * Parsed JSON presentation of `export * as ... from ...` statement.
  */
-export type NamespaceReexport = Position & {namespace: string};
+export type NamespaceReexport = Position & {namespace: Name};
 
 /**
  * Parsed JSON presentation of `export * from ...` statement.

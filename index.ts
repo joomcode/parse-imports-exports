@@ -56,5 +56,26 @@ export const parseImportsExports = (source: string): ImportsExports => {
 
   parse(importsExports, source);
 
+  let previousError: string | undefined;
+  let previousIndex: string | undefined;
+
+  // re-declarations when overloading functions are not an error, so we remove them
+  for (const index in importsExports.errors) {
+    const error = importsExports.errors[index as unknown as number]!;
+
+    if (
+      error.split(':')[0] === previousError?.split(':')[0] &&
+      (error.startsWith('Duplicate exported declaration `function') ||
+        error.startsWith('Duplicate exported declaration `async function') ||
+        error.startsWith('Duplicate exported declaration `declare function'))
+    ) {
+      delete importsExports.errors[previousIndex as unknown as number];
+      delete importsExports.errors[index as unknown as number];
+    }
+
+    previousError = error;
+    previousIndex = index;
+  }
+
   return importsExports;
 };

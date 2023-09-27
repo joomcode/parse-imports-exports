@@ -1,4 +1,4 @@
-import {addError, parseFrom, parseIdentifier, stripComments} from './utils';
+import {addError, parseDestructuring, parseFrom, parseIdentifier, stripComments} from './utils';
 
 import type {Kind, MutableImportsExports, NamespaceReexport, OnParse, StarReexport} from './types';
 
@@ -7,9 +7,9 @@ import type {Kind, MutableImportsExports, NamespaceReexport, OnParse, StarReexpo
  */
 export const onDeclarationExportError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  _source,
-  {start},
-) => addError(importsExports, 'Cannot find end of export with declaration', start);
+  source,
+  {start, end},
+) => addError(importsExports, 'Cannot find end of export with declaration', source, start, end);
 
 /**
  * Parses `export` statement with declaration.
@@ -41,7 +41,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot declare star export (\`export ${modifiers}* ... from ...\`)`,
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -56,7 +58,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot find namespace of \`export ${modifiers}* as ... from ...\` statement`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -74,7 +78,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         'Cannot find end of `from` string literal of reexport',
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -86,7 +92,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -130,7 +138,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       `Cannot parse declaration identifier of \`export ${modifiers}...\` statement`,
+      source,
       exportStart,
+      exportEnd,
     );
   }
 
@@ -145,7 +155,13 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         undefined
       >;
     } else if (identifier in typeExports) {
-      return addError(importsExports, `Duplicate exported type \`${identifier}\``, exportStart);
+      return addError(
+        importsExports,
+        `Duplicate exported type \`${identifier}\``,
+        source,
+        exportStart,
+        exportEnd,
+      );
     }
 
     typeExports[identifier] = {start: exportStart, end: exportEnd};
@@ -162,12 +178,14 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot export default with declare (\`export ${modifiers}default ...\`)`,
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
     if (importsExports.defaultExport !== undefined) {
-      return addError(importsExports, 'Duplicate default export', exportStart);
+      return addError(importsExports, 'Duplicate default export', source, exportStart, exportEnd);
     }
 
     importsExports.defaultExport = {start: exportStart, end: exportEnd};
@@ -184,7 +202,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot parse interface identifier of \`export ${modifiers}interface ...\` statement`,
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -226,7 +246,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot parse namespace identifier of \`export ${modifiers}namespace ...\` statement`,
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -263,7 +285,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
   let isAsync = false;
   let kind: Kind | undefined;
-  let name: string | undefined;
+  const names: string[] = [];
 
   switch (identifier) {
     case 'const':
@@ -271,13 +293,42 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     case 'enum':
     case 'let':
     case 'var':
+      if (
+        (identifier === 'const' || identifier === 'let' || identifier === 'var') &&
+        (unparsed[0] === '{' || unparsed[0] === '[')
+      ) {
+        const destructuringNames = parseDestructuring(unparsed);
+
+        if (destructuringNames === undefined) {
+          return addError(
+            importsExports,
+            `Cannot parse destructuring names in \`export ${modifiers}${identifier} ...\` statement`,
+            source,
+            exportStart,
+            exportEnd,
+          );
+        }
+
+        names.push(...destructuringNames);
+
+        kind = `destructuring ${identifier}`;
+
+        if (isDeclare) {
+          kind = `declare ${kind}`;
+        }
+
+        break;
+      }
+
       const nameIndex = parseIdentifier(unparsed);
 
       if (nameIndex === 0) {
         return addError(
           importsExports,
           `Cannot parse \`${identifier}\` identifier of \`export ${modifiers}${identifier} ...\` statement`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -287,9 +338,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         kind = `declare ${kind}`;
       }
 
-      name = unparsed.slice(0, nameIndex);
+      names[0] = unparsed.slice(0, nameIndex);
 
-      if (identifier === 'const' && name === 'enum') {
+      if (identifier === 'const' && names[0] === 'enum') {
         unparsed = unparsed.slice(4).trim();
 
         const constEnumNameIndex = parseIdentifier(unparsed);
@@ -298,7 +349,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
           return addError(
             importsExports,
             `Cannot parse identifier of \`export ${modifiers}const enum ...\` statement`,
+            source,
             exportStart,
+            exportEnd,
           );
         }
 
@@ -308,7 +361,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
           kind = `declare ${kind}`;
         }
 
-        name = unparsed.slice(0, constEnumNameIndex);
+        names[0] = unparsed.slice(0, constEnumNameIndex);
       }
 
       break;
@@ -318,7 +371,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot parse declaration of abstract class of \`export ${modifiers}abstract ...\` statement`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -330,7 +385,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot parse \`${identifier}\` identifier of \`export ${modifiers}abstract class ${identifier} ...\` statement`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -340,7 +397,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         kind = `declare ${kind}`;
       }
 
-      name = unparsed.slice(0, abstractClassNameIndex);
+      names[0] = unparsed.slice(0, abstractClassNameIndex);
       break;
 
     // @ts-expect-error
@@ -349,7 +406,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot export async function with declare (\`export ${modifiers}async ...\`)`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -357,7 +416,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           'Cannot parse async function in `export async ...` statement',
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -370,7 +431,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
           return addError(
             importsExports,
             `Cannot export generator function with declare (\`export ${modifiers}function* ...\`)`,
+            source,
             exportStart,
+            exportEnd,
           );
         }
 
@@ -392,18 +455,22 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot parse \`${kind}\` identifier of \`export ${modifiers}${kind} ...\` statement`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
-      name = unparsed.slice(0, functionNameIndex);
+      names[0] = unparsed.slice(0, functionNameIndex);
       break;
 
     default:
       return addError(
         importsExports,
         `Cannot parse \`export ${modifiers}${identifier} ...\` statement`,
+        source,
         exportStart,
+        exportEnd,
       );
   }
 
@@ -414,13 +481,19 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       typeof declarationExports,
       undefined
     >;
-  } else if (name in declarationExports) {
-    return addError(
-      importsExports,
-      `Duplicate exported declaration \`${kind} ${name}\``,
-      exportStart,
-    );
   }
 
-  declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};
+  for (const name of names) {
+    if (name in declarationExports) {
+      return addError(
+        importsExports,
+        `Duplicate exported declaration \`${kind} ${name}\``,
+        source,
+        exportStart,
+        exportEnd,
+      );
+    }
+
+    declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};
+  }
 };

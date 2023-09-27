@@ -7,15 +7,17 @@ import type {MutableImportsExports, Names, NamedExport, OnParse, TypeNamedExport
  */
 export const onNamedExportError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  _source,
-  {start, match: {groups}},
+  source,
+  {start, end, match: {groups}},
 ) =>
   addError(
     importsExports,
     `Cannot find end of \`export ${
       groups!['type'] === undefined ? '' : 'type '
     }{...} ...\` statement`,
+    source,
     start,
+    end,
   );
 
 /**
@@ -38,7 +40,9 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -51,7 +55,9 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot find end of reexports list (\`}\`) for reexport from \`${maybeFrom}\``,
+        source,
         exportStart,
+        exportEnd,
       );
     }
 
@@ -89,7 +95,9 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Cannot use \`type\` modifier in \`export type {...}\` statement for type \`${name.slice(
             5,
           )}\`${maybeFrom === undefined ? '' : ` for reexport from \`${maybeFrom}\``}`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -114,7 +122,9 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Duplicate exported type \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 
@@ -128,7 +138,9 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Duplicate exported name \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
+          source,
           exportStart,
+          exportEnd,
         );
       }
 

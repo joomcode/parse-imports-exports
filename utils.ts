@@ -1,4 +1,10 @@
-import type {CommentPair, MutableImportsExports, OnCommentError, OnGlobalError} from './types';
+import type {
+  CommentPair,
+  MutableImportsExports,
+  Name,
+  OnCommentError,
+  OnGlobalError,
+} from './types';
 
 /**
  * Adds some parse error to parse results.
@@ -6,7 +12,9 @@ import type {CommentPair, MutableImportsExports, OnCommentError, OnGlobalError} 
 export const addError = (
   importsExports: MutableImportsExports,
   message: string,
-  index: number,
+  source: string,
+  startIndex: number,
+  endIndex?: number,
 ): void => {
   let {errors} = importsExports;
 
@@ -14,7 +22,13 @@ export const addError = (
     importsExports.errors = errors = {};
   }
 
-  errors[index] = errors[index] === undefined ? message : `${errors[index]}\n${message}`;
+  const fullMessage =
+    endIndex === undefined
+      ? message
+      : `${message}:\n${source.slice(startIndex, Math.min(endIndex, startIndex + 200))}`;
+
+  errors[startIndex] =
+    errors[startIndex] === undefined ? fullMessage : `${errors[startIndex]}\n${fullMessage}`;
 };
 
 /**
@@ -25,7 +39,7 @@ const backslashesRegExp = /\\+/g;
 /**
  * Hash with start characters of identifiers.
  */
-const identifierStartCharacters: Record<string, true> = {};
+const identifierStartCharacters = {__proto__: null} as unknown as Record<string, true>;
 
 for (const character of 'abcdefghijklmnopqrstuvwxyz_$') {
   identifierStartCharacters[character] = true;
@@ -35,7 +49,10 @@ for (const character of 'abcdefghijklmnopqrstuvwxyz_$') {
 /**
  * Hash with characters of identifiers.
  */
-const identifierCharacters: Record<string, true> = {...identifierStartCharacters};
+const identifierCharacters = {__proto__: null, ...identifierStartCharacters} as unknown as Record<
+  string,
+  true
+>;
 
 for (const character of '0123456789') {
   identifierCharacters[character] = true;
@@ -53,28 +70,70 @@ export {createParseFunction} from 'parse-statements';
  */
 export const onGlobalError: OnGlobalError<MutableImportsExports> = (
   importsExports,
-  _source,
+  source,
   message,
   index,
-) => addError(importsExports, message, index);
+) => addError(importsExports, message, source, index);
 
 /**
  * Adds error of parsing multiline comment.
  */
 export const onMultilineCommentError: OnCommentError<MutableImportsExports> = (
   importsExports,
-  _source,
+  source,
   {start},
-) => addError(importsExports, 'Cannot find end of multiline comment', start);
+) => addError(importsExports, 'Cannot find end of multiline comment', source, start);
 
 /**
  * Adds error of parsing singleline comment.
  */
 export const onSinglelineCommentError: OnCommentError<MutableImportsExports> = (
   importsExports,
-  _source,
+  source,
   {start},
-) => addError(importsExports, 'Cannot find end of singleline comment', start);
+) => addError(importsExports, 'Cannot find end of singleline comment', source, start);
+
+/**
+ * Parses destructuring assignment.
+ */
+export const parseDestructuring = (
+  sourceStartsWithDestructuring: string,
+): readonly Name[] | undefined => {
+  const openBracket = sourceStartsWithDestructuring[0];
+  const closeBracket = openBracket === '{' ? '}' : ']';
+
+  const names: Name[] = [];
+
+  let bracketsDepth = 1;
+
+  for (let index = 1; index < sourceStartsWithDestructuring.length; index += 1) {
+    const char = sourceStartsWithDestructuring[index]!;
+
+    if (char === openBracket) {
+      bracketsDepth += 1;
+    } else if (char === closeBracket) {
+      bracketsDepth -= 1;
+
+      if (bracketsDepth === 0) {
+        return names;
+      }
+    } else if (char === ':') {
+      names.pop();
+    } else if (char in identifierStartCharacters) {
+      const nameIndex = parseIdentifier(sourceStartsWithDestructuring.slice(index));
+
+      if (nameIndex === 0) {
+        return;
+      }
+
+      names.push(sourceStartsWithDestructuring.slice(index, index + nameIndex));
+
+      index += nameIndex - 1;
+    }
+  }
+
+  return;
+};
 
 /**
  * Parses string literal after `from` at the end of the source string.

@@ -15,9 +15,29 @@ function assert(value: boolean, message: string): asserts value is true {
 }
 
 const assertEqualExceptNumbers = (a: object, b: object, message: string) => {
+  let originalErrors: Record<string, string> | undefined;
+
+  if ('errors' in a) {
+    originalErrors = a.errors as Record<string, string>;
+
+    const errors = {__proto__: null} as unknown as Record<string, string>;
+
+    for (const key in originalErrors) {
+      errors[key] = originalErrors[key]!.split(':')[0]!;
+    }
+
+    a.errors = errors;
+  }
+
   const aJson = JSON.stringify(a)
     .replace(/\d+/g, '0')
     .replace(/__proto__/g, 'PROTO');
+
+  if (originalErrors !== undefined) {
+    // @ts-expect-error
+    a.errors = originalErrors;
+  }
+
   const bJson = JSON.stringify(b)
     .replace(/\d+/g, '0')
     .replace(/__proto__/g, 'PROTO');
@@ -57,7 +77,7 @@ const withImportError = parseImportsExports('import something;');
 assert(
   Object.keys(withImportError).length === 1 &&
     Object.keys(withImportError.errors!).length === 1 &&
-    withImportError.errors![0] === 'Cannot find end of `import` statement',
+    withImportError.errors![0]!.startsWith('Cannot find end of `import` statement:'),
   'returns correct error of parsing import statement',
 );
 
@@ -66,7 +86,7 @@ const withExportError = parseImportsExports('export type {something;');
 assert(
   Object.keys(withExportError).length === 1 &&
     Object.keys(withExportError.errors!).length === 1 &&
-    withExportError.errors![0] === 'Cannot find end of `export type {...} ...` statement',
+    withExportError.errors![0]!.startsWith('Cannot find end of `export type {...} ...` statement:'),
   'returns correct error of parsing named export statement',
 );
 
@@ -285,6 +305,40 @@ export declare const enum {};
 export constenum EC {}
 export declare constenum DEC {}
 
+export const A = 1;
+export const A = 1;
+export const A = 1;
+
+export function doubleF(): void
+export function doubleF() {}
+
+export function tripleF(): void
+export function tripleF(arg: string): void
+export  function  tripleF (arg?: string): void {}
+
+export async function quadrupleF(): Promise<void>
+export async function quadrupleF(arg: number): Promise<void>
+export async function quadrupleF(arg: string): Promise<void>
+export async function quadrupleF(arg?: number | string): Promise<void> {}
+
+export declare function tripleDF(): void
+export  declare function tripleDF(arg: string): void
+export  declare  function  tripleDF (arg?: string): void {}
+
+export async function quadrupleF(arg?: number | string): Promise<void> {}
+
+export async function doubleAF(arg: number): Promise<void>;
+export async function doubleAF(arg: string): Promise<void>;
+export async function doubleAF(arg: number | string): Promise<void> {}
+
+export const [destructuringFoo, destructuringBar] = useFoobar();
+
+export declare var {name: destructuringBaz} = useName();
+export  let  [{names: [{destructuringQux}, {foo: destructuringQuux}]} ] = useNames()
+
+export const {foo = useFoo();
+export let [] = []; // correct code in ECMAScript/TypeScript
+
 import {foo};
 
 export { toString };
@@ -378,6 +432,17 @@ assertEqualExceptNumbers(
       Den: {start, end, kind: 'declare enum'},
       Cen: {start, end, kind: 'const enum'},
       Dcen: {start, end, kind: 'declare const enum'},
+      A: {start, end, kind: 'const'},
+      doubleF: {start, end, kind: 'function'},
+      tripleF: {start, end, kind: 'function'},
+      quadrupleF: {start, end, kind: 'async function'},
+      tripleDF: {start, end, kind: 'declare function'},
+      doubleAF: {start, end, kind: 'async function'},
+      destructuringFoo: {start, end, kind: 'destructuring const'},
+      destructuringBar: {start, end, kind: 'destructuring const'},
+      destructuringBaz: {start, end, kind: 'declare destructuring var'},
+      destructuringQux: {start, end, kind: 'destructuring let'},
+      destructuringQuux: {start, end, kind: 'destructuring let'},
     },
     interfaceExports: {
       I: [
@@ -450,7 +515,12 @@ assertEqualExceptNumbers(
       44: 'Cannot parse identifier of `export declare const enum ...` statement',
       45: 'Cannot parse `export constenum ...` statement',
       46: 'Cannot parse `export declare constenum ...` statement',
-      47: 'Cannot find end of `import` statement',
+      47: 'Duplicate exported declaration `const A`',
+      48: 'Duplicate exported declaration `const A`',
+      49: 'Duplicate exported declaration `function doubleF`',
+      50: 'Duplicate exported declaration `async function quadrupleF`',
+      51: 'Cannot parse destructuring names in `export const ...` statement',
+      52: 'Cannot find end of `import` statement',
     },
     starReexports: {quux: [{start, end}]},
     typeNamespaceReexports: {
