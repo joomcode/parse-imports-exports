@@ -4,6 +4,7 @@ import type {
   Name,
   OnCommentError,
   OnGlobalError,
+  OnParse,
 } from './types';
 
 /**
@@ -66,6 +67,38 @@ const stripFirstCharacter = (someString: string) => someString.slice(1);
 export {createParseFunction} from 'parse-statements';
 
 /**
+ * Adds error of parsing string literal started with backtick.
+ */
+export const onBacktickError: OnParse<MutableImportsExports, 1> = (
+  importsExports,
+  source,
+  {start, end},
+) =>
+  addError(
+    importsExports,
+    'Cannot find end of string literal started with backtick',
+    source,
+    start,
+    end,
+  );
+
+/**
+ * Adds error of parsing string literal started with double quote.
+ */
+export const onDoubleQuoteError: OnParse<MutableImportsExports, 1> = (
+  importsExports,
+  source,
+  {start, end},
+) =>
+  addError(
+    importsExports,
+    'Cannot find end of string literal started with double quote',
+    source,
+    start,
+    end,
+  );
+
+/**
  * Adds global error of parsing source.
  */
 export const onGlobalError: OnGlobalError<MutableImportsExports> = (
@@ -85,13 +118,29 @@ export const onMultilineCommentError: OnCommentError<MutableImportsExports> = (
 ) => addError(importsExports, 'Cannot find end of multiline comment', source, start);
 
 /**
- * Adds error of parsing singleline comment.
+ * Adds error of parsing single line comment.
  */
 export const onSinglelineCommentError: OnCommentError<MutableImportsExports> = (
   importsExports,
   source,
   {start},
-) => addError(importsExports, 'Cannot find end of singleline comment', source, start);
+) => addError(importsExports, 'Cannot find end of single line comment', source, start);
+
+/**
+ * Adds error of parsing string literal started with single quote.
+ */
+export const onSingleQuoteError: OnParse<MutableImportsExports, 1> = (
+  importsExports,
+  source,
+  {start, end},
+) =>
+  addError(
+    importsExports,
+    'Cannot find end of string literal started with single quote',
+    source,
+    start,
+    end,
+  );
 
 /**
  * Parses destructuring assignment.

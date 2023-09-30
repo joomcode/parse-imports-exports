@@ -1,4 +1,11 @@
-export type {CommentPair, OnCommentError, OnGlobalError, OnParse} from 'parse-statements';
+export type {
+  CommentPair,
+  OnCommentError,
+  OnGlobalError,
+  OnParse,
+  Options as ParseOptions,
+  Parse,
+} from 'parse-statements';
 
 /**
  * Parsed JSON presentation of `export (class|const|function|var...) ...` statement.
@@ -210,6 +217,17 @@ export type NamespaceImport = Position & {default?: Name; namespace: Name};
  * Parsed JSON presentation of `export * as ... from ...` statement.
  */
 export type NamespaceReexport = Position & {namespace: Name};
+
+/**
+ * Options of `parseImportsExports` function.
+ */
+export type Options = Readonly<{
+  /**
+   * If `true`, then we ignore string literals during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), string literals are respected.
+   */
+  ignoreStringLiterals?: boolean;
+}>;
 
 /**
  * Parsed JSON presentation of `export * from ...` statement.

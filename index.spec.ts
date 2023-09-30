@@ -336,6 +336,20 @@ export const [destructuringFoo, destructuringBar] = useFoobar();
 export declare var {name: destructuringBaz} = useName();
 export  let  [{names: [{destructuringQux}, {foo: destructuringQuux}]} ] = useNames()
 
+'
+/*
+export const A = 4;
+"';
+
+"/**
+import 'jquery';
+"
+
+\`
+import 'typescript';
+/**
+ \`;
+
 export const {foo = useFoo();
 export let [] = []; // correct code in ECMAScript/TypeScript
 
