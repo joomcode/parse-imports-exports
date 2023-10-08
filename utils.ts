@@ -20,7 +20,10 @@ export const addError = (
   let {errors} = importsExports;
 
   if (errors === undefined) {
-    importsExports.errors = errors = {};
+    importsExports.errors = errors = {__proto__: null} as unknown as Exclude<
+      typeof errors,
+      undefined
+    >;
   }
 
   const fullMessage =

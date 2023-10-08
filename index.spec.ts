@@ -347,6 +347,7 @@ import 'jquery';
 
 \`
 import 'typescript';
+${1 + 1}
 /**
  \`;
 
@@ -354,6 +355,40 @@ export const {foo = useFoo();
 export let [] = []; // correct code in ECMAScript/TypeScript
 
 import {foo};
+
+const di = await import('foo');
+let dip =  import("bar")
+
+import("foo")
+
+// import('baz')
+
+import('qux");
+
+type JQuery = typeof import("jquery");
+
+type JQ = typeof import('jquery')
+
+// typeof import('typescript')
+
+type Qux = typeof import("qux")
+
+type Quux = typeof import("qux')
+
+const foo = require('foo');
+const bar = require("bar")
+let baz =  require('bar')
+
+/* require('jquery') */
+// require("foo");
+
+'require("baz")';;
+
+require("foo');
+
+import(");
+
+typeof import("foo)
 
 export { toString };
 
@@ -535,6 +570,11 @@ assertEqualExceptNumbers(
       50: 'Duplicate exported declaration `async function quadrupleF`',
       51: 'Cannot parse destructuring names in `export const ...` statement',
       52: 'Cannot find end of `import` statement',
+      53: 'Cannot find start of path string literal of dynamic import',
+      54: 'Cannot find start of path string literal of dynamic import of type',
+      55: 'Cannot find start of path string literal of require',
+      56: 'Cannot find end of `import(...)` statement',
+      57: 'Cannot find end of `import(...)` statement',
     },
     starReexports: {quux: [{start, end}]},
     typeNamespaceReexports: {
@@ -559,6 +599,27 @@ assertEqualExceptNumbers(
       {start, end},
       {start, end, names: {corge: {by: 'garply'}}},
     ],
+    dynamicImports: {
+      foo: [
+        {start, end},
+        {start, end},
+      ],
+      bar: [{start, end}],
+    },
+    typeDynamicImports: {
+      jquery: [
+        {start, end},
+        {start, end},
+      ],
+      qux: [{start, end}],
+    },
+    requires: {
+      foo: [{start, end}],
+      bar: [
+        {start, end},
+        {start, end},
+      ],
+    },
   } satisfies typeof importsExports,
   'returns expected results and errors for all sort of statements',
 );
@@ -580,7 +641,16 @@ import {foo as baz, type Bar} from 'Qux';
 // {Qux: [{start: 80, end: 112, namespace: 'foo', default: 'Foo'}]}
 import Foo, * as foo from 'Qux';
 
-// {Qux: [{start: 134, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]}
+// {Qux: [{start: 114, end: 127}]}
+const foo = await import('Qux');
+
+// {Qux: [{start: 128, end, 134}]}
+const foo = require('Qux');
+
+// {Qux: [{start: 137, end: 141}]}
+type Foo = typeof import('Qux');
+
+// {Qux: [{start: 142, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]}
 import type {Foo as Baz, Bar} from 'Qux';
 
 // {Qux: [{start: 201, end: 233, namespace: 'Foo'}]}
@@ -639,63 +709,85 @@ assertEqualExceptNumbers(
      * Imports.
      */
     // import {foo as baz, type Bar} from 'Qux';
-    namedImports: {Qux: [{start: 17, end: 58, names: {baz: {by: 'foo'}}, types: {Bar: {}}}]},
+    namedImports: {Qux: [{start, end, names: {baz: {by: 'foo'}}, types: {Bar: {}}}]},
 
     // import Foo, * as foo from 'Qux';
-    namespaceImports: {Qux: [{start: 80, end: 112, namespace: 'foo', default: 'Foo'}]},
+    namespaceImports: {Qux: [{start, end, namespace: 'foo', default: 'Foo'}]},
+
+    // const foo = await import('Qux');
+    dynamicImports: {Qux: [{start, end}]},
+
+    // const foo = require('Qux');
+    requires: {Qux: [{start, end}]},
+
+    // type Foo = typeof import('Qux');
+    typeDynamicImports: {Qux: [{start, end}]},
 
     // import type {Foo as Baz, Bar} from 'Qux';
-    typeNamedImports: {Qux: [{start: 134, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
+    typeNamedImports: {Qux: [{start, end, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
 
     // import type * as Foo from 'Qux';
-    typeNamespaceImports: {Qux: [{start: 201, end: 233, namespace: 'Foo'}]},
+    typeNamespaceImports: {Qux: [{start, end, namespace: 'Foo'}]},
 
     /**
      * Reexports.
      */
     // export {foo as baz, type Bar} from 'Qux';
-    namedReexports: {Qux: [{start: 254, end: 295, names: {baz: {by: 'foo'}}, types: {Bar: {}}}]},
+    namedReexports: {Qux: [{start, end, names: {baz: {by: 'foo'}}, types: {Bar: {}}}]},
 
     // export * as foo from 'Qux';
-    namespaceReexports: {Qux: [{start: 319, end: 346, namespace: 'foo'}]},
+    namespaceReexports: {Qux: [{start, end, namespace: 'foo'}]},
 
     // export * from 'Qux';
-    starReexports: {Qux: [{start: 365, end: 385}]},
+    starReexports: {Qux: [{start, end}]},
 
     // export type {Foo as Baz, Bar} from 'Qux';
-    typeNamedReexports: {Qux: [{start: 409, end: 450, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
+    typeNamedReexports: {Qux: [{start, end, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
 
     // export type * as Foo from 'Qux';
-    typeNamespaceReexports: {Qux: [{start: 478, end: 510, namespace: 'Foo'}]},
+    typeNamespaceReexports: {Qux: [{start, end, namespace: 'Foo'}]},
 
     // export type * from 'Qux';
-    typeStarReexports: {Qux: [{start: 533, end: 558}]},
+    typeStarReexports: {Qux: [{start, end}]},
 
     /**
      * Exports.
      */
     // export default 42;
-    defaultExport: {start: 578, end: 596},
+    defaultExport: {start, end},
 
     // export {foo as baz, type Bar};
-    namedExports: [{start: 614, end: 644, names: {baz: {by: 'foo'}}, types: {Bar: {}}}],
+    namedExports: [{start, end, names: {baz: {by: 'foo'}}, types: {Bar: {}}}],
 
     // export const foo = 2;
-    declarationExports: {foo: {start: 668, end: 689, kind: 'const'}},
+    declarationExports: {foo: {start, end, kind: 'const'}},
 
     // export type {Foo as Baz, Bar};
-    typeNamedExports: [{start: 711, end: 741, names: {Baz: {by: 'Foo'}, Bar: {}}}],
+    typeNamedExports: [{start, end, names: {Baz: {by: 'Foo'}, Bar: {}}}],
 
     // export type T = number;
-    typeExports: {T: {start: 758, end: 781}},
+    typeExports: {T: {start, end}},
 
     // export interface I {foo: number};
-    interfaceExports: {I: [{start: 803, end: 836}]},
+    interfaceExports: {I: [{start, end}]},
 
     // export namespace N {foo: number};
-    namespaceExports: {N: [{start: 858, end: 891}]},
+    namespaceExports: {N: [{start, end}]},
   },
   'returns expected results for all base statements',
 );
+
+const withoutRequire = parseImportsExports(
+  `
+const foo = require('foo');
+
+const bar = await import('bar');
+`,
+  {ignoreRequires: true},
+);
+
+assert('requires' in withoutRequire === false, 'respects parse options');
+
+assert(Array.isArray(withoutRequire.dynamicImports?.['bar']), 'parses unignored statements');
 
 ok(`All ${testsCount} tests passed in ${Date.now() - startTestsTime}ms!`);

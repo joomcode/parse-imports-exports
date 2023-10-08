@@ -1,11 +1,6 @@
-export type {
-  CommentPair,
-  OnCommentError,
-  OnGlobalError,
-  OnParse,
-  Options as ParseOptions,
-  Parse,
-} from 'parse-statements';
+import type {Options as ParseOptions} from 'parse-statements';
+
+export type {CommentPair, OnCommentError, OnGlobalError, OnParse, Parse} from 'parse-statements';
 
 /**
  * Parsed JSON presentation of `export (class|const|function|var...) ...` statement.
@@ -79,6 +74,11 @@ type TypeNamespaceReexport = Position & {namespace: Name};
 type TypeStarReexport = Position;
 
 /**
+ * Parsed JSON presentation of `import(...)` statement.
+ */
+export type DynamicImport = Position;
+
+/**
  * Parsed JSON presentation of imports, exports and reexports of ECMAScript/TypeScript module.
  */
 export type ImportsExports = DeepReadonly<MutableImportsExports>;
@@ -125,6 +125,13 @@ export type MutableImportsExports = {
    * `export default ...`.
    */
   defaultExport?: DefaultExport;
+  /**
+   * `import(...)`.
+   */
+  dynamicImports?: Record<Path, readonly DynamicImport[]>;
+  /**
+   * Syntax errors of module.
+   */
   errors?: Record<number, string>;
   /**
    * `export interface ...`.
@@ -155,9 +162,17 @@ export type MutableImportsExports = {
    */
   namespaceReexports?: Record<Path, readonly NamespaceReexport[]>;
   /**
+   * `require(...)`.
+   */
+  requires?: Record<Path, readonly Require[]>;
+  /**
    * `export * from ...`.
    */
   starReexports?: Record<Path, readonly StarReexport[]>;
+  /**
+   * `typeof import(...)`.
+   */
+  typeDynamicImports?: Record<Path, readonly DynamicImport[]>;
   /**
    * `export type ...`.
    */
@@ -223,16 +238,42 @@ export type NamespaceReexport = Position & {namespace: Name};
  */
 export type Options = Readonly<{
   /**
+   * If `true`, then we ignore `import(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `import(...)` expressions are parsed.
+   */
+  ignoreDynamicImports?: boolean;
+  /**
+   * If `true`, then we ignore `require(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `require(...)` expressions are parsed.
+   */
+  ignoreRequires?: boolean;
+  /**
    * If `true`, then we ignore string literals during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), string literals are respected.
+   * By default (if `false` or skipped option), string literals are parsed, that is,
+   * the text inside them cannot be interpreted as another expression.
    */
   ignoreStringLiterals?: boolean;
 }>;
+
+export type {ParseOptions};
+
+/**
+ * Parsed JSON presentation of `require(...)` statement.
+ */
+export type Require = Position;
 
 /**
  * Parsed JSON presentation of `export * from ...` statement.
  */
 export type StarReexport = Position;
+
+/**
+ * Type of statement for parse options.
+ */
+export type Statement = Exclude<
+  ParseOptions<MutableImportsExports>['statements'],
+  undefined
+>[number];
 
 /**
  * Parsed JSON presentation of `export type {...}` statement.

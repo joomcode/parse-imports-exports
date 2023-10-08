@@ -1,6 +1,8 @@
 import {onDeclarationExportError, onDeclarationExportParse} from './declarationExport';
-import {onNamedExportError, onNamedExportParse} from './namedExport';
+import {onDynamicImportError, onDynamicImportParse} from './dynamicImport';
 import {onImportError, onImportParse} from './import';
+import {onNamedExportError, onNamedExportParse} from './namedExport';
+import {onRequireError, onRequireParse} from './require';
 import {
   createParseFunction,
   onBacktickError,
@@ -18,10 +20,47 @@ import type {
   Options,
   Parse,
   ParseOptions,
+  Statement,
 } from './types';
 
-let parse: Parse<MutableImportsExports> | undefined;
-let parseWithoutStringLiterals: Parse<MutableImportsExports> | undefined;
+/**
+ * Base statements for parsing `import`/`export` declarations.
+ */
+const baseStatements: readonly Statement[] = [
+  {
+    canIncludeComments: true,
+    onError: onImportError as OnParse,
+    onParse: onImportParse as OnParse,
+    tokens: ['^import ', '[\'"];?$'],
+  },
+  {
+    canIncludeComments: true,
+    onError: onNamedExportError as OnParse,
+    onParse: onNamedExportParse as OnParse,
+    tokens: ['^export (?<type>type )?\\{', '(\\};?$)|(?<quote>[\'"];?$)'],
+  },
+  {
+    canIncludeComments: true,
+    onError: onDeclarationExportError as OnParse,
+    onParse: onDeclarationExportParse as OnParse,
+    tokens: ['^export ', '$'],
+  },
+];
+
+/**
+ * Statement for parsing dynamic import call (`import(...)`).
+ */
+const dynamicImportStatement: Statement = {
+  canIncludeComments: false,
+  onError: onDynamicImportError as OnParse,
+  onParse: onDynamicImportParse as OnParse,
+  tokens: ['\\bimport\\([\'"]', '[\'"]\\)'],
+};
+
+/**
+ * Cache of parse functions with different options.
+ */
+const parseCache = {__proto__: null} as unknown as Record<string, Parse<MutableImportsExports>>;
 
 /**
  * Base options of parse function.
@@ -38,30 +77,26 @@ const parseOptions: ParseOptions<MutableImportsExports> = {
     },
   ],
   onError: onGlobalError,
-  statements: [
-    {canIncludeComments: false, onError: onSingleQuoteError as OnParse, tokens: ["'", "'"]},
-    {canIncludeComments: false, onError: onDoubleQuoteError as OnParse, tokens: ['"', '"']},
-    {canIncludeComments: false, onError: onBacktickError as OnParse, tokens: ['`', '`']},
-    {
-      canIncludeComments: true,
-      onError: onImportError as OnParse,
-      onParse: onImportParse as OnParse,
-      tokens: ['^import ', '[\'"];?$'],
-    },
-    {
-      canIncludeComments: true,
-      onError: onNamedExportError as OnParse,
-      onParse: onNamedExportParse as OnParse,
-      tokens: ['^export (?<type>type )?\\{', '(\\};?$)|(?<quote>[\'"];?$)'],
-    },
-    {
-      canIncludeComments: true,
-      onError: onDeclarationExportError as OnParse,
-      onParse: onDeclarationExportParse as OnParse,
-      tokens: ['^export ', '$'],
-    },
-  ],
 };
+
+/**
+ * Statement for parsing require call (`require(...)`).
+ */
+const requireStatement: Statement = {
+  canIncludeComments: false,
+  onError: onRequireError as OnParse,
+  onParse: onRequireParse as OnParse,
+  tokens: ['\\brequire\\([\'"]', '[\'"]\\)'],
+};
+
+/**
+ * Statements for parsing string literals.
+ */
+const stringLiteralStatements: readonly Statement[] = [
+  {canIncludeComments: false, onError: onSingleQuoteError as OnParse, tokens: ["'", "'"]},
+  {canIncludeComments: false, onError: onDoubleQuoteError as OnParse, tokens: ['"', '"']},
+  {canIncludeComments: false, onError: onBacktickError as OnParse, tokens: ['`', '`']},
+];
 
 export type {ImportsExports};
 
@@ -70,26 +105,47 @@ export type {Kind} from './types';
 /**
  * Parses `import`/`export` in ECMAScript/TypeScript syntax.
  */
-export const parseImportsExports = (source: string, options: Options = {}): ImportsExports => {
+export const parseImportsExports = (source: string, options?: Options): ImportsExports => {
   const importsExports: MutableImportsExports = {};
-  const {ignoreStringLiterals = false} = options;
+  let cacheKey = '';
 
-  if (ignoreStringLiterals === false) {
-    if (parse === undefined) {
-      parse = createParseFunction<MutableImportsExports>(parseOptions);
+  if (options !== undefined) {
+    if (options.ignoreDynamicImports === true) {
+      cacheKey += 'ignoreDynamicImports';
     }
 
-    parse(importsExports, source);
-  } else {
-    if (parseWithoutStringLiterals === undefined) {
-      parseWithoutStringLiterals = createParseFunction<MutableImportsExports>({
-        ...parseOptions,
-        statements: parseOptions.statements!.slice(3),
-      });
+    if (options.ignoreRequires === true) {
+      cacheKey += 'ignoreRequires';
     }
 
-    parseWithoutStringLiterals(importsExports, source);
+    if (options.ignoreStringLiterals === true) {
+      cacheKey += 'ignoreStringLiterals';
+    }
   }
+
+  let parse = parseCache[cacheKey];
+
+  if (parse === undefined) {
+    const statements = [...baseStatements];
+
+    if (!options?.ignoreDynamicImports) {
+      statements.push(dynamicImportStatement);
+    }
+
+    if (!options?.ignoreRequires) {
+      statements.push(requireStatement);
+    }
+
+    if (!options?.ignoreStringLiterals) {
+      statements.unshift(...stringLiteralStatements);
+    }
+
+    parse = createParseFunction<MutableImportsExports>({...parseOptions, statements});
+
+    parseCache[cacheKey] = parse;
+  }
+
+  parse(importsExports, source);
 
   let previousError: string | undefined;
   let previousIndex: string | undefined;

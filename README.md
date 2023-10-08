@@ -27,7 +27,16 @@ import {foo as baz, type Bar} from 'Qux';
 // {Qux: [{start: 80, end: 112, namespace: 'foo', default: 'Foo'}]}
 import Foo, * as foo from 'Qux';
 
-// {Qux: [{start: 134, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]}
+// {Qux: [{start: 114, end: 127}]}
+const foo = await import('Qux');
+
+// {Qux: [{start: 128, end, 134}]}
+const foo = require('Qux');
+
+// {Qux: [{start: 137, end: 141}]}
+type Foo = typeof import('Qux');
+
+// {Qux: [{start: 142, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]}
 import type {Foo as Baz, Bar} from 'Qux';
 
 // {Qux: [{start: 201, end: 233, namespace: 'Foo'}]}
@@ -103,8 +112,17 @@ const importsExportsShape = {
   // import Foo, * as foo from 'Qux';
   namespaceImports: {Qux: [{start: 80, end: 112, namespace: 'foo', default: 'Foo'}]},
 
+  // const foo = await import('Qux');
+  dynamicImports: {Qux: [{start: 114, end: 127}]},
+
+  // const foo = require('Qux');
+  requires: {Qux: [{start: 128, end: 134}]},
+
+  // type Foo = typeof import('Qux');
+  typeDynamicImports: {Qux: [{start: 137, end: 141}]},
+
   // import type {Foo as Baz, Bar} from 'Qux';
-  typeNamedImports: {Qux: [{start: 134, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
+  typeNamedImports: {Qux: [{start: 142, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
 
   // import type * as Foo from 'Qux';
   typeNamespaceImports: {Qux: [{start: 201, end: 233, namespace: 'Foo'}]},
