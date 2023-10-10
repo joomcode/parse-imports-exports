@@ -98,7 +98,7 @@ const stringLiteralStatements: readonly Statement[] = [
   {canIncludeComments: false, onError: onBacktickError as OnParse, tokens: ['`', '`']},
 ];
 
-export type {ImportsExports};
+export type {ImportsExports, Options};
 
 export type {Kind} from './types';
 
