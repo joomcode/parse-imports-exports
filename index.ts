@@ -93,9 +93,9 @@ const requireStatement: Statement = {
  * Statements for parsing string literals.
  */
 const stringLiteralStatements: readonly Statement[] = [
-  {canIncludeComments: false, onError: onSingleQuoteError as OnParse, tokens: ["'", "'"]},
-  {canIncludeComments: false, onError: onDoubleQuoteError as OnParse, tokens: ['"', '"']},
-  {canIncludeComments: false, onError: onBacktickError as OnParse, tokens: ['`', '`']},
+  {canIncludeComments: false, onError: onSingleQuoteError as OnParse, tokens: ["'", "(?<!\\\\)'"]},
+  {canIncludeComments: false, onError: onDoubleQuoteError as OnParse, tokens: ['"', '(?<!\\\\)"']},
+  {canIncludeComments: false, onError: onBacktickError as OnParse, tokens: ['`', '(?<!\\\\)`']},
 ];
 
 export type {ImportsExports, Options};

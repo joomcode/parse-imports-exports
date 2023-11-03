@@ -145,21 +145,43 @@ export const onSingleQuoteError: OnParse<MutableImportsExports, 1> = (
     end,
   );
 
+type Destructuring =
+  | Readonly<{
+      endIndex: number;
+      names: readonly Name[];
+    }>
+  | undefined;
+
 /**
  * Parses destructuring assignment.
  */
-export const parseDestructuring = (
-  sourceStartsWithDestructuring: string,
-): readonly Name[] | undefined => {
+export const parseDestructuring = (sourceStartsWithDestructuring: string): Destructuring => {
   const openBracket = sourceStartsWithDestructuring[0];
   const closeBracket = openBracket === '{' ? '}' : ']';
 
   const names: Name[] = [];
 
   let bracketsDepth = 1;
+  let isInsideSinglelineComment = false;
+  let isInsideMultilineComment = false;
 
   for (let index = 1; index < sourceStartsWithDestructuring.length; index += 1) {
     const char = sourceStartsWithDestructuring[index]!;
+
+    if (isInsideSinglelineComment) {
+      if (char === '\n') {
+        isInsideSinglelineComment = false;
+      }
+
+      continue;
+    } else if (isInsideMultilineComment) {
+      if (char === '*' && sourceStartsWithDestructuring[index + 1] === '/') {
+        isInsideMultilineComment = false;
+        index += 1;
+      }
+
+      continue;
+    }
 
     if (char === openBracket) {
       bracketsDepth += 1;
@@ -167,10 +189,20 @@ export const parseDestructuring = (
       bracketsDepth -= 1;
 
       if (bracketsDepth === 0) {
-        return names;
+        return {endIndex: index, names};
       }
     } else if (char === ':') {
       names.pop();
+    } else if (char === '/') {
+      const nextChar = sourceStartsWithDestructuring[index + 1];
+
+      if (nextChar === '/') {
+        isInsideSinglelineComment = true;
+        index += 1;
+      } else if (nextChar === '*') {
+        isInsideMultilineComment = true;
+        index += 1;
+      }
     } else if (char in identifierStartCharacters) {
       const nameIndex = parseIdentifier(sourceStartsWithDestructuring.slice(index));
 

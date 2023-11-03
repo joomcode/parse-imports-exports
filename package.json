@@ -5,7 +5,7 @@
   "author": "uid11",
   "bugs": "https://github.com/joomcode/parse-imports-exports/issues",
   "dependencies": {
-    "parse-statements": "1.0.3"
+    "parse-statements": "1.0.6"
   },
   "devDependencies": {
     "prettier": ">=3",

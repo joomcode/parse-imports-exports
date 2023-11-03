@@ -21,6 +21,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   {start: unparsedEnd, end: exportEnd},
 ) => {
   let isDeclare = false;
+  let increasedExportEnd: number | undefined = undefined;
   let isType = false;
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
 
@@ -297,9 +298,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         (identifier === 'const' || identifier === 'let' || identifier === 'var') &&
         (unparsed[0] === '{' || unparsed[0] === '[')
       ) {
-        const destructuringNames = parseDestructuring(unparsed);
+        const destructuring = parseDestructuring(`${unparsed}${source.slice(exportEnd)}`);
 
-        if (destructuringNames === undefined) {
+        if (destructuring === undefined) {
           return addError(
             importsExports,
             `Cannot parse destructuring names in \`export ${modifiers}${identifier} ...\` statement`,
@@ -309,7 +310,13 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
           );
         }
 
-        names.push(...destructuringNames);
+        const exportEndDiff = destructuring.endIndex - unparsed.length;
+
+        if (exportEndDiff > 0) {
+          increasedExportEnd = exportEndDiff + exportEnd;
+        }
+
+        names.push(...destructuring.names);
 
         kind = `destructuring ${identifier}`;
 
@@ -496,4 +503,6 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
     declarationExports[name!] = {start: exportStart, end: exportEnd, kind: kind!};
   }
+
+  return increasedExportEnd;
 };

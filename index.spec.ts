@@ -46,9 +46,9 @@ const assertEqualExceptNumbers = (a: object, b: object, message: string) => {
     if (aJson[index] !== bJson[index]) {
       assert(
         false,
-        `${message}:\n${aJson.slice(index - 30, index + 70)}\n${bJson.slice(
-          index - 30,
-          index + 70,
+        `${message}:\n${aJson.slice(index - 50, index + 500)}\n\n${bJson.slice(
+          index - 50,
+          index + 500,
         )}`,
       );
     }
@@ -331,7 +331,10 @@ export async function doubleAF(arg: number): Promise<void>;
 export async function doubleAF(arg: string): Promise<void>;
 export async function doubleAF(arg: number | string): Promise<void> {}
 
-export const [destructuringFoo, destructuringBar] = useFoobar();
+export const [
+  destructuringFoo, // some comment /* inner comment */
+/* also comment // inner comment */  {bar: destructuringBar},
+ /*commentAgain*/ destructuringCorge] = useFoobar();
 
 export declare var {name: destructuringBaz} = useName();
 export  let  [{names: [{destructuringQux}, {foo: destructuringQuux}]} ] = useNames()
@@ -350,6 +353,16 @@ import 'typescript';
 ${1 + 1}
 /**
  \`;
+
+'can\\'t parse this';
+"can\\"t parse this";
+\`can\\\`t parse this\`;
+
+\`
+import "react";
+\${\`\${'react'}\`}
+import "react";
+\`
 
 export const {foo = useFoo();
 export let [] = []; // correct code in ECMAScript/TypeScript
@@ -489,6 +502,7 @@ assertEqualExceptNumbers(
       doubleAF: {start, end, kind: 'async function'},
       destructuringFoo: {start, end, kind: 'destructuring const'},
       destructuringBar: {start, end, kind: 'destructuring const'},
+      destructuringCorge: {start, end, kind: 'destructuring const'},
       destructuringBaz: {start, end, kind: 'declare destructuring var'},
       destructuringQux: {start, end, kind: 'destructuring let'},
       destructuringQuux: {start, end, kind: 'destructuring let'},
