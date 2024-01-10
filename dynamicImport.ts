@@ -1,6 +1,7 @@
-import {addError, parseFrom} from './utils';
+import {parseFrom} from './partParsers';
+import {addError} from './utils';
 
-import type {DynamicImport, MutableImportsExports, OnParse} from './types';
+import type {DynamicImport, ExcludeUndefined, MutableImportsExports, OnParse} from './types';
 
 /**
  * Adds error of parsing `import('...')`/`import("...")` statement.
@@ -47,12 +48,12 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 2> = (
   let imports = importsExports[key];
 
   if (imports === undefined) {
-    importsExports[key] = imports = {__proto__: null} as Exclude<typeof imports, undefined>;
+    importsExports[key] = imports = {__proto__: null} as ExcludeUndefined<typeof imports>;
   }
 
   let importsList = imports[from];
 
-  if (Array.isArray(importsList) === false) {
+  if (importsList === undefined) {
     imports[from] = importsList = [];
   }
 

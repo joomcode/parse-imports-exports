@@ -1,6 +1,14 @@
-import {addError, parseFrom, spacesRegExp, stripComments} from './utils';
+import {parseFrom} from './partParsers';
+import {addError, spacesRegExp, stripComments} from './utils';
 
-import type {MutableImportsExports, Names, NamedExport, OnParse, TypeNamedExport} from './types';
+import type {
+  ExcludeUndefined,
+  MutableImportsExports,
+  Names,
+  NamedExport,
+  OnParse,
+  TypeNamedExport,
+} from './types';
 
 /**
  * Adds error of parsing named `export` statement.
@@ -170,12 +178,12 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     let reexports = importsExports[key];
 
     if (reexports === undefined) {
-      importsExports[key] = reexports = {__proto__: null} as Exclude<typeof reexports, undefined>;
+      importsExports[key] = reexports = {__proto__: null} as ExcludeUndefined<typeof reexports>;
     }
 
     let reexportsList = reexports[maybeFrom];
 
-    if (Array.isArray(reexportsList) === false) {
+    if (reexportsList === undefined) {
       reexports[maybeFrom] = reexportsList = [];
     }
 

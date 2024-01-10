@@ -1,6 +1,7 @@
-import {addError, parseFrom} from './utils';
+import {parseFrom} from './partParsers';
+import {addError} from './utils';
 
-import type {MutableImportsExports, OnParse, Require} from './types';
+import type {ExcludeUndefined, MutableImportsExports, OnParse, Require} from './types';
 
 /**
  * Adds error of parsing `require('...')`/`require("...")` statement.
@@ -28,7 +29,7 @@ export const onRequireParse: OnParse<MutableImportsExports, 2> = (
   if (index !== 0) {
     return addError(
       importsExports,
-      'Cannot find start of path string literal of require',
+      'Cannot find start of path string literal in `require(...)`',
       source,
       requireStart,
       requireEnd,
@@ -40,12 +41,12 @@ export const onRequireParse: OnParse<MutableImportsExports, 2> = (
   let {requires} = importsExports;
 
   if (requires === undefined) {
-    importsExports.requires = requires = {__proto__: null} as Exclude<typeof requires, undefined>;
+    importsExports.requires = requires = {__proto__: null} as ExcludeUndefined<typeof requires>;
   }
 
   let requiresList = requires[from];
 
-  if (Array.isArray(requiresList) === false) {
+  if (requiresList === undefined) {
     requires[from] = requiresList = [];
   }
 

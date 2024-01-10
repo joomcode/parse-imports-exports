@@ -20,5 +20,5 @@
     "target": "ES2018",
     "types": []
   },
-  "files": ["index.spec.ts"]
+  "files": ["./spec/index.spec.ts"]
 }

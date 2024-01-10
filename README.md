@@ -90,6 +90,12 @@ export interface I {
 export namespace N {
   foo: number;
 }
+
+// {start: 901, end: 915}
+module.exports = 42;
+
+// {foo: {start: 917, end: 931, startsWithModule: true}}
+module.exports.foo = 2;
 ```
 
 Let its content be stored as a string in the variable `source`.
@@ -171,6 +177,12 @@ const importsExportsShape = {
 
   // export namespace N {foo: number};
   namespaceExports: {N: [{start: 858, end: 891}]},
+
+  // module.exports = 42;
+  commonJsNamespaceExport: {start, end},
+
+  // module.exports.foo = 2;
+  commonJsExports: {foo: {start, end, startsWithModule: true}},
 };
 ```
 
@@ -184,6 +196,72 @@ npm install parse-imports-exports
 
 `parse-imports-exports` works in any environment that supports ES2018
 (because package uses [RegExp Named Capture Groups](https://github.com/tc39/proposal-regexp-named-groups)).
+
+## API
+
+`parse-imports-exports` exports one runtime value — the `parseImportsExports` function:
+
+```ts
+import {parseImportsExports} from 'parse-imports-exports';
+
+import type {ImportsExports, Options} from 'parse-imports-exports';
+
+const importsExports: ImportsExports = parseImportsExports('some source code (as string)');
+// or with optional options:
+const importsExports = parseImportsExports('some source code (as string)', options);
+
+// all option fields are optional boolean with default `false` value
+const options: Options = {
+  /**
+   * If `true`, then we ignore `module.exports = ...`/`(module.)exports.foo = ...` expressions
+   * during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `module.exports = ...`/`(module.)exports.foo = ...`
+   * expressions are parsed.
+   */
+  ignoreCommonJsExports: false;
+  /**
+   * If `true`, then we ignore `import(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `import(...)` expressions are parsed.
+   */
+  ignoreDynamicImports: false;
+  /**
+   * If `true`, then we ignore regular expression literals (`/.../`)
+   * during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), regular expression literals are parsed.
+   */
+  ignoreRegexpLiterals: false;
+  /**
+   * If `true`, then we ignore `require(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `require(...)` expressions are parsed.
+   */
+  ignoreRequires: false;
+  /**
+   * If `true`, then we ignore string literals during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), string literals are parsed, that is,
+   * the text inside them cannot be interpreted as another expression.
+   */
+  ignoreStringLiterals: false;
+};
+```
+
+`parse-imports-exports` also exports types included in the API:
+
+```ts
+export type {
+  /**
+   * Parsed JSON presentation of imports, exports and reexports of ECMAScript/TypeScript module.
+   */
+  ImportsExports,
+  /**
+   * Kind of exported declaration.
+   */
+  Kind,
+  /**
+   * Options of `parseImportsExports` function.
+   */
+  Options,
+};
+```
 
 ## License
 

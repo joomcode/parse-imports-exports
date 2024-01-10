@@ -1,11 +1,4 @@
-import type {
-  CommentPair,
-  MutableImportsExports,
-  Name,
-  OnCommentError,
-  OnGlobalError,
-  OnParse,
-} from './types';
+import type {CommentPair, ExcludeUndefined, MutableImportsExports, Options} from './types';
 
 /**
  * Adds some parse error to parse results.
@@ -20,251 +13,88 @@ export const addError = (
   let {errors} = importsExports;
 
   if (errors === undefined) {
-    importsExports.errors = errors = {__proto__: null} as unknown as Exclude<
-      typeof errors,
-      undefined
+    importsExports.errors = errors = {__proto__: null} as unknown as ExcludeUndefined<
+      typeof errors
     >;
   }
+
+  const additionalOffset = endIndex !== undefined && endIndex < startIndex + 2 ? 100 : 0;
 
   const fullMessage =
     endIndex === undefined
       ? message
-      : `${message}:\n${source.slice(startIndex, Math.min(endIndex, startIndex + 200))}`;
+      : `${message}:\n${source.slice(
+          startIndex,
+          Math.min(endIndex + additionalOffset, startIndex + 200),
+        )}`;
 
   errors[startIndex] =
     errors[startIndex] === undefined ? fullMessage : `${errors[startIndex]}\n${fullMessage}`;
 };
 
-/**
- * Regexp that find all backslashes.
- */
-const backslashesRegExp = /\\+/g;
-
-/**
- * Hash with start characters of identifiers.
- */
-const identifierStartCharacters = {__proto__: null} as unknown as Record<string, true>;
-
-for (const character of 'abcdefghijklmnopqrstuvwxyz_$') {
-  identifierStartCharacters[character] = true;
-  identifierStartCharacters[character.toUpperCase()] = true;
-}
-
-/**
- * Hash with characters of identifiers.
- */
-const identifierCharacters = {__proto__: null, ...identifierStartCharacters} as unknown as Record<
-  string,
-  true
->;
-
-for (const character of '0123456789') {
-  identifierCharacters[character] = true;
-}
-
-/**
- * Strips first character from string.
- */
-const stripFirstCharacter = (someString: string) => someString.slice(1);
-
 export {createParseFunction} from 'parse-statements';
 
 /**
- * Adds error of parsing string literal started with backtick.
+ * Get key for cache of parse functions by options.
  */
-export const onBacktickError: OnParse<MutableImportsExports, 1> = (
-  importsExports,
-  source,
-  {start, end},
-) =>
-  addError(
-    importsExports,
-    'Cannot find end of string literal started with backtick',
-    source,
-    start,
-    end,
-  );
-
-/**
- * Adds error of parsing string literal started with double quote.
- */
-export const onDoubleQuoteError: OnParse<MutableImportsExports, 1> = (
-  importsExports,
-  source,
-  {start, end},
-) =>
-  addError(
-    importsExports,
-    'Cannot find end of string literal started with double quote',
-    source,
-    start,
-    end,
-  );
-
-/**
- * Adds global error of parsing source.
- */
-export const onGlobalError: OnGlobalError<MutableImportsExports> = (
-  importsExports,
-  source,
-  message,
-  index,
-) => addError(importsExports, message, source, index);
-
-/**
- * Adds error of parsing multiline comment.
- */
-export const onMultilineCommentError: OnCommentError<MutableImportsExports> = (
-  importsExports,
-  source,
-  {start},
-) => addError(importsExports, 'Cannot find end of multiline comment', source, start);
-
-/**
- * Adds error of parsing single line comment.
- */
-export const onSinglelineCommentError: OnCommentError<MutableImportsExports> = (
-  importsExports,
-  source,
-  {start},
-) => addError(importsExports, 'Cannot find end of single line comment', source, start);
-
-/**
- * Adds error of parsing string literal started with single quote.
- */
-export const onSingleQuoteError: OnParse<MutableImportsExports, 1> = (
-  importsExports,
-  source,
-  {start, end},
-) =>
-  addError(
-    importsExports,
-    'Cannot find end of string literal started with single quote',
-    source,
-    start,
-    end,
-  );
-
-type Destructuring =
-  | Readonly<{
-      endIndex: number;
-      names: readonly Name[];
-    }>
-  | undefined;
-
-/**
- * Parses destructuring assignment.
- */
-export const parseDestructuring = (sourceStartsWithDestructuring: string): Destructuring => {
-  const openBracket = sourceStartsWithDestructuring[0];
-  const closeBracket = openBracket === '{' ? '}' : ']';
-
-  const names: Name[] = [];
-
-  let bracketsDepth = 1;
-  let isInsideSinglelineComment = false;
-  let isInsideMultilineComment = false;
-
-  for (let index = 1; index < sourceStartsWithDestructuring.length; index += 1) {
-    const char = sourceStartsWithDestructuring[index]!;
-
-    if (isInsideSinglelineComment) {
-      if (char === '\n') {
-        isInsideSinglelineComment = false;
-      }
-
-      continue;
-    } else if (isInsideMultilineComment) {
-      if (char === '*' && sourceStartsWithDestructuring[index + 1] === '/') {
-        isInsideMultilineComment = false;
-        index += 1;
-      }
-
-      continue;
-    }
-
-    if (char === openBracket) {
-      bracketsDepth += 1;
-    } else if (char === closeBracket) {
-      bracketsDepth -= 1;
-
-      if (bracketsDepth === 0) {
-        return {endIndex: index, names};
-      }
-    } else if (char === ':') {
-      names.pop();
-    } else if (char === '/') {
-      const nextChar = sourceStartsWithDestructuring[index + 1];
-
-      if (nextChar === '/') {
-        isInsideSinglelineComment = true;
-        index += 1;
-      } else if (nextChar === '*') {
-        isInsideMultilineComment = true;
-        index += 1;
-      }
-    } else if (char in identifierStartCharacters) {
-      const nameIndex = parseIdentifier(sourceStartsWithDestructuring.slice(index));
-
-      if (nameIndex === 0) {
-        return;
-      }
-
-      names.push(sourceStartsWithDestructuring.slice(index, index + nameIndex));
-
-      index += nameIndex - 1;
-    }
+export const getCacheKey = (options: Options | undefined): string => {
+  if (options === undefined) {
+    return '';
   }
 
-  return;
+  let cacheKey = '';
+
+  if (options.ignoreCommonJsExports === true) {
+    cacheKey += 'ignoreCommonJsExports';
+  }
+
+  if (options.ignoreDynamicImports === true) {
+    cacheKey += 'ignoreDynamicImports';
+  }
+
+  if (options.ignoreRegexpLiterals === true) {
+    cacheKey += 'ignoreRegexpLiterals';
+  }
+
+  if (options.ignoreRequires === true) {
+    cacheKey += 'ignoreRequires';
+  }
+
+  if (options.ignoreStringLiterals === true) {
+    cacheKey += 'ignoreStringLiterals';
+  }
+
+  return cacheKey;
 };
 
 /**
- * Parses string literal after `from` at the end of the source string.
+ * Removes errors, caused by function overloading.
+ * Re-declarations when overloading functions are not an error, so we remove them.
  */
-export const parseFrom = (
-  quoteCharacter: string,
-  sourceWithString: string,
-): Readonly<{from: string; index: number}> => {
-  let hasBackslash = false;
-  let index = sourceWithString.length - 1;
+export const removeErrorsCausedByOverloading = (importsExports: MutableImportsExports): void => {
+  let previousError: string | undefined;
+  let previousIndex: string | undefined;
 
-  for (; index >= 0; index -= 1) {
-    const character = sourceWithString[index];
+  for (const index in importsExports.errors) {
+    const error = importsExports.errors[index as unknown as number]!;
 
-    if (character === '\\') {
-      hasBackslash = true;
+    if (
+      (error.startsWith('Duplicate exported declaration `function') ||
+        error.startsWith('Duplicate exported declaration `async function') ||
+        error.startsWith('Duplicate exported declaration `declare function')) &&
+      error.split(':')[0] === previousError?.split(':')[0]
+    ) {
+      delete importsExports.errors[previousIndex as unknown as number];
+      delete importsExports.errors[index as unknown as number];
     }
 
-    if (character === quoteCharacter && sourceWithString[index - 1] !== '\\') {
-      break;
-    }
+    previousError = error;
+    previousIndex = index;
   }
 
-  let from = sourceWithString.slice(index + 1);
-
-  if (hasBackslash) {
-    from = from.replace(backslashesRegExp, stripFirstCharacter);
+  if (importsExports.errors !== undefined && Object.keys(importsExports.errors).length === 0) {
+    delete importsExports.errors;
   }
-
-  return {from, index};
-};
-
-/**
- * Parses identifier from the start of the source string.
- */
-export const parseIdentifier = (sourceStartsWithIdentifier: string): number => {
-  if (!identifierStartCharacters[sourceStartsWithIdentifier[0]!]) {
-    return 0;
-  }
-
-  for (let index = 1; index < sourceStartsWithIdentifier.length; index += 1) {
-    if (!identifierCharacters[sourceStartsWithIdentifier[index]!]) {
-      return index;
-    }
-  }
-
-  return 0;
 };
 
 /**

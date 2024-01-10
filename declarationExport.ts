@@ -1,6 +1,14 @@
-import {addError, parseDestructuring, parseFrom, parseIdentifier, stripComments} from './utils';
+import {parseDestructuring, parseFrom, parseIdentifier} from './partParsers';
+import {addError, stripComments} from './utils';
 
-import type {Kind, MutableImportsExports, NamespaceReexport, OnParse, StarReexport} from './types';
+import type {
+  ExcludeUndefined,
+  Kind,
+  MutableImportsExports,
+  NamespaceReexport,
+  OnParse,
+  StarReexport,
+} from './types';
 
 /**
  * Adds error of parsing `export` statement with declaration.
@@ -119,12 +127,12 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let reexports = importsExports[key];
 
     if (reexports === undefined) {
-      importsExports[key] = reexports = {__proto__: null} as Exclude<typeof reexports, undefined>;
+      importsExports[key] = reexports = {__proto__: null} as ExcludeUndefined<typeof reexports>;
     }
 
     let reexportsList = reexports[from];
 
-    if (Array.isArray(reexportsList) === false) {
+    if (reexportsList === undefined) {
       reexports[from] = reexportsList = [];
     }
 
@@ -151,9 +159,8 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {typeExports} = importsExports;
 
     if (typeExports === undefined) {
-      importsExports.typeExports = typeExports = {__proto__: null} as Exclude<
-        typeof typeExports,
-        undefined
+      importsExports.typeExports = typeExports = {__proto__: null} as ExcludeUndefined<
+        typeof typeExports
       >;
     } else if (identifier in typeExports) {
       return addError(
@@ -214,19 +221,18 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {interfaceExports} = importsExports;
 
     if (interfaceExports === undefined) {
-      importsExports.interfaceExports = interfaceExports = {__proto__: null} as Exclude<
-        typeof interfaceExports,
-        undefined
+      importsExports.interfaceExports = interfaceExports = {__proto__: null} as ExcludeUndefined<
+        typeof interfaceExports
       >;
     }
 
     let exportsList = interfaceExports[name];
 
-    if (Array.isArray(exportsList) === false) {
+    if (exportsList === undefined) {
       interfaceExports[name] = exportsList = [];
     }
 
-    const interfaceExport: Exclude<typeof exportsList, undefined>[number] = {
+    const interfaceExport: ExcludeUndefined<typeof exportsList>[number] = {
       start: exportStart,
       end: exportEnd,
     };
@@ -258,19 +264,18 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     let {namespaceExports} = importsExports;
 
     if (namespaceExports === undefined) {
-      importsExports.namespaceExports = namespaceExports = {__proto__: null} as Exclude<
-        typeof namespaceExports,
-        undefined
+      importsExports.namespaceExports = namespaceExports = {__proto__: null} as ExcludeUndefined<
+        typeof namespaceExports
       >;
     }
 
     let exportsList = namespaceExports[name];
 
-    if (Array.isArray(exportsList) === false) {
+    if (exportsList === undefined) {
       namespaceExports[name] = exportsList = [];
     }
 
-    const namespaceExport: Exclude<typeof exportsList, undefined>[number] = {
+    const namespaceExport: ExcludeUndefined<typeof exportsList>[number] = {
       start: exportStart,
       end: exportEnd,
     };
@@ -484,9 +489,8 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   let {declarationExports} = importsExports;
 
   if (declarationExports === undefined) {
-    importsExports.declarationExports = declarationExports = {__proto__: null} as Exclude<
-      typeof declarationExports,
-      undefined
+    importsExports.declarationExports = declarationExports = {__proto__: null} as ExcludeUndefined<
+      typeof declarationExports
     >;
   }
 
