@@ -1,7 +1,7 @@
 import {readdir, readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 
-import {type ImportsExports, parseImportsExports} from '../index';
+import {type ImportsExports, parseImportsExports} from '../src/index';
 
 import './types';
 

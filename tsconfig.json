@@ -14,7 +14,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": ".",
+    "outDir": "./build",
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2018",

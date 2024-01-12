@@ -1,6 +1,6 @@
 {
   "name": "parse-imports-exports",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fast and easy parser for declarations of import and export in ECMAScript/TypeScript",
   "author": "uid11",
   "bugs": "https://github.com/joomcode/parse-imports-exports/issues",
@@ -35,11 +35,12 @@
     "url": "https://github.com/joomcode/parse-imports-exports"
   },
   "scripts": {
-    "prebuild": "rm -f *.js *.d.ts ./spec/*.js ./spec/*.d.ts",
     "build": "tsc",
+    "prebuild": "rm -fr ./build/*",
+    "prerelease": "npm test && cp LICENSE package.json README.md ./build/src && rm ./build/src/types.js",
     "prettier": "prettier --cache --cache-strategy=content --write . !package-lock.json",
-    "test": "export _START=$(date +%s%3N) && npm run prettier && npm run build && node ./spec/index.spec.js",
-    "prepublishOnly": "npm test && rm types.js"
+    "release": "npm publish ./build/src",
+    "test": "export _START=$(date +%s%3N) && npm run prettier && npm run build && node ./build/spec/index.spec.js"
   },
   "sideEffects": false,
   "types": "index.d.ts"

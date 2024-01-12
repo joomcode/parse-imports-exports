@@ -1,4 +1,4 @@
-import {parseImportsExports} from '../index';
+import {parseImportsExports} from '../src/index';
 
 import {assertEqualExceptNumbers, end, start} from './utils';
 
