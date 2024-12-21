@@ -40,7 +40,7 @@
     "prebuild": "rm -fr ./build/*",
     "build": "tsc",
     "postbuild": "node ./build/convertEsmToCjs.js",
-    "prerelease": "npm test && cp LICENSE package.json README.md ./build/src && rm ./build/src/types.js",
+    "prerelease": "npm test && cp LICENSE package.json README.md ./build/src && rm ./build/src/types.cjs ./build/src/types.js",
     "release": "npm publish ./build/src",
     "test": "export _START=$(date +%s%3N) && npm run prettier && npm run build && node ./build/spec/index.spec.js"
   },
