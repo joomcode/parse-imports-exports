@@ -1,22 +1,22 @@
-import {onCommonJsExportError, onCommonJsExportParse} from './commonJsExport';
-import {onDeclarationExportError, onDeclarationExportParse} from './declarationExport';
-import {onDynamicImportError, onDynamicImportParse} from './dynamicImport';
-import {onImportError, onImportParse} from './import';
-import {onNamedExportError, onNamedExportParse} from './namedExport';
+import {onCommonJsExportError, onCommonJsExportParse} from './commonJsExport.js';
+import {onDeclarationExportError, onDeclarationExportParse} from './declarationExport.js';
+import {onDynamicImportError, onDynamicImportParse} from './dynamicImport.js';
+import {onImportError, onImportParse} from './import.js';
+import {onNamedExportError, onNamedExportParse} from './namedExport.js';
 import {
   onBacktickError,
   onDoubleQuoteError,
   onMultilineCommentError,
   onSinglelineCommentError,
   onSingleQuoteError,
-} from './onErrors';
-import {onRegexpError, onRegexpParse} from './regexp';
-import {onRequireError, onRequireParse} from './require';
+} from './onErrors.js';
+import {onRegexpError, onRegexpParse} from './regexp.js';
+import {onRequireError, onRequireParse} from './require.js';
 
 import type {Comment, OnParse, Options, Statement} from './types';
 
 /**
- * Base options of parse function.
+ * Statements of ECMAScript comments.
  */
 export const comments: readonly Comment[] = [
   {

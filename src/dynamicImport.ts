@@ -1,5 +1,5 @@
-import {parseFrom} from './partParsers';
-import {addError} from './utils';
+import {parseFrom} from './partParsers.js';
+import {addError} from './utils.js';
 
 import type {DynamicImport, ExcludeUndefined, MutableImportsExports, OnParse} from './types';
 

@@ -1,6 +1,6 @@
-import {parseImportsExports} from '../src/index';
+import {parseImportsExports} from '../src/index.js';
 
-import {assert, assertEqualExceptNumbers, end, start} from './utils';
+import {assert, assertEqualExceptNumbers, end, start} from './utils.js';
 
 export const testFeaturesAndErrors = (): void => {
   const importsExports = parseImportsExports(`

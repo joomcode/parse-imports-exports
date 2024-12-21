@@ -1,5 +1,5 @@
-import {parseIdentifier} from './partParsers';
-import {addError, stripComments} from './utils';
+import {parseIdentifier} from './partParsers.js';
+import {addError, stripComments} from './utils.js';
 
 import type {ExcludeUndefined, MutableImportsExports, OnParse} from './types';
 

@@ -1,5 +1,5 @@
-import {parseDestructuring, parseFrom, parseIdentifier} from './partParsers';
-import {addError, stripComments} from './utils';
+import {parseDestructuring, parseFrom, parseIdentifier} from './partParsers.js';
+import {addError, stripComments} from './utils.js';
 
 import type {
   ExcludeUndefined,

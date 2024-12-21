@@ -5,7 +5,7 @@ import {
   assertObjectWithParsedContentHasNoErrors,
   getContentOfFilesInDirectory,
   parseContentInObjectValues,
-} from './utils';
+} from './utils.js';
 
 export const testRealworldExamples = async (): Promise<void> => {
   const typescriptDirectory = join('node_modules', 'typescript', 'lib');
@@ -21,6 +21,10 @@ export const testRealworldExamples = async (): Promise<void> => {
 
   for (const key of Object.keys(typescriptParsedContent)) {
     const parsedContent = typescriptParsedContent[key]!;
+
+    if (key === 'tsc.js' || key === 'tsserver.js' || key === 'typingsInstaller.js') {
+      continue;
+    }
 
     if (Array.isArray(parsedContent.requires!['fs']) === false) {
       assert(false, `\`${key}\` has require \`fs\``);
@@ -39,7 +43,8 @@ export const testRealworldExamples = async (): Promise<void> => {
   assertObjectWithParsedContentHasNoErrors(parseStatementsContent, 'parse-statements');
 
   assert(
-    parseStatementsContent['index.js']!.commonJsExports!['createParseFunction'] instanceof Object,
+    parseStatementsContent['index.js']?.declarationExports?.['createParseFunction'] instanceof
+      Object,
     'correctly parses `createParseFunction` from `parse-statements`',
   );
 

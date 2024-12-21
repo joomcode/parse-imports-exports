@@ -1,6 +1,6 @@
-import {onGlobalError} from './onErrors';
-import {comments, getStatements} from './statements';
-import {createParseFunction, getCacheKey, removeErrorsCausedByOverloading} from './utils';
+import {onGlobalError} from './onErrors.js';
+import {comments, getStatements} from './statements.js';
+import {createParseFunction, getCacheKey, removeErrorsCausedByOverloading} from './utils.js';
 
 import type {ImportsExports, MutableImportsExports, Options, Parse, ParseOptions} from './types';
 

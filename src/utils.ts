@@ -100,7 +100,7 @@ export const removeErrorsCausedByOverloading = (importsExports: MutableImportsEx
 /**
  * Regexp that find all spaces.
  */
-export const spacesRegExp = /\s+/g;
+export const spacesRegExp: RegExp = /\s+/g;
 
 /**
  * Strips comments from string interval from source.

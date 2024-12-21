@@ -1,20 +1,21 @@
 {
   "name": "parse-imports-exports",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Fast and easy parser for declarations of import and export in ECMAScript/TypeScript",
   "author": "uid11",
   "bugs": "https://github.com/joomcode/parse-imports-exports/issues",
   "dependencies": {
-    "parse-statements": "1.0.9"
+    "parse-statements": "1.0.10"
   },
   "devDependencies": {
-    "prettier": ">=3.1",
-    "typescript": ">=5.3"
+    "prettier": ">=3.4",
+    "typescript": ">=5.7"
   },
   "exports": {
     ".": "./index.js"
   },
   "files": [
+    "*.cjs",
     "*.js",
     "index.d.ts",
     "types.d.ts"
@@ -32,16 +33,18 @@
   "packageManager": "npm@10",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joomcode/parse-imports-exports"
+    "url": "git+https://github.com/joomcode/parse-imports-exports.git"
   },
   "scripts": {
-    "build": "tsc",
+    "prettier": "prettier --cache --cache-strategy=content --write .",
     "prebuild": "rm -fr ./build/*",
+    "build": "tsc",
+    "postbuild": "node ./build/convertEsmToCjs.js",
     "prerelease": "npm test && cp LICENSE package.json README.md ./build/src && rm ./build/src/types.js",
-    "prettier": "prettier --cache --cache-strategy=content --write . !package-lock.json",
     "release": "npm publish ./build/src",
     "test": "export _START=$(date +%s%3N) && npm run prettier && npm run build && node ./build/spec/index.spec.js"
   },
   "sideEffects": false,
+  "type": "module",
   "types": "index.d.ts"
 }

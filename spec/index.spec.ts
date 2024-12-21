@@ -1,9 +1,9 @@
-import {testBasic} from './basic.spec';
-import {testDocExamples} from './doc.examples.spec';
-import {testFeaturesAndErrors} from './features.and.errors.spec';
-import {testRealworldExamples} from './realworld.examples.spec';
+import {testBasic} from './basic.spec.js';
+import {testDocExamples} from './doc.examples.spec.js';
+import {testFeaturesAndErrors} from './features.and.errors.spec.js';
+import {testRealworldExamples} from './realworld.examples.spec.js';
 
-import {ok, testsCount} from './utils';
+import {ok, testsCount} from './utils.js';
 
 declare const process: {env: {_START: string}};
 

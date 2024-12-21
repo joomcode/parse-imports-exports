@@ -1,9 +1,9 @@
 import {readdir, readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 
-import {type ImportsExports, parseImportsExports} from '../src/index';
+import {type ImportsExports, parseImportsExports} from '../src/index.js';
 
-import './types';
+import './types.js';
 
 /**
  * Asserts that value is `true`.
@@ -18,10 +18,12 @@ export function assert(value: boolean, message: string): asserts value is true {
   console.log(' ✅', message);
 }
 
+type AssertEqualExceptNumbers = (actual: object, expected: object, message: string) => void;
+
 /**
  * Asserts that two objects are equivalent, except perhaps for numeric values.
  */
-export const assertEqualExceptNumbers = (actual: object, expected: object, message: string) => {
+export const assertEqualExceptNumbers: AssertEqualExceptNumbers = (actual, expected, message) => {
   let originalErrors: Record<string, string> | undefined;
 
   if ('errors' in actual) {
@@ -110,7 +112,12 @@ export const getContentOfFilesInDirectory = async (
   return contentOfFiles;
 };
 
-export const ok = (message: string) => console.log(`\x1B[32m[OK]\x1B[39m ${message}`);
+type Ok = (message: string) => void;
+
+/**
+ * Print development `ok` message.
+ */
+export const ok: Ok = (message) => console.log(`\x1B[32m[OK]\x1B[39m ${message}`);
 
 /**
  * Parses values of object properties, and returns object with same shape.
