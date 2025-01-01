@@ -19,14 +19,14 @@ const foo = await import('Qux');
 // {Qux: [{start: 128, end, 134}]}
 const foo = require('Qux');
 
-// {Qux: [{start: 137, end: 141}]}
-type Foo = typeof import('Qux');
-
 // {Qux: [{start: 142, end: 175, names: {Baz: {by: 'Foo'}, Bar: {}}}]}
 import type {Foo as Baz, Bar} from 'Qux';
 
 // {Qux: [{start: 201, end: 233, namespace: 'Foo'}]}
 import type * as Foo from 'Qux';
+
+// {Qux: [{start: 137, end: 141}]}
+type Foo = typeof import('Qux');
 
 /**
  * Reexports.
@@ -98,14 +98,14 @@ module.exports.foo = 2;
       // const foo = require('Qux');
       requires: {Qux: [{start, end}]},
 
-      // type Foo = typeof import('Qux');
-      typeDynamicImports: {Qux: [{start, end}]},
-
       // import type {Foo as Baz, Bar} from 'Qux';
       typeNamedImports: {Qux: [{start, end, names: {Baz: {by: 'Foo'}, Bar: {}}}]},
 
       // import type * as Foo from 'Qux';
       typeNamespaceImports: {Qux: [{start, end, namespace: 'Foo'}]},
+
+      // type Foo = typeof import('Qux');
+      typeDynamicImports: {Qux: [{start, end}]},
 
       /**
        * Reexports.

@@ -327,6 +327,10 @@ export {__proto__}`);
   assertEqualExceptNumbers(
     importsExports,
     {
+      /**
+       * Imports.
+       */
+
       namedImports: {
         "ba'z": [{start, end, names: {foo: {}, bar: {}}}],
         jquery: [{start, end}],
@@ -354,14 +358,7 @@ export {__proto__}`);
           {start, end, names: {PROTO: {}, prototype: {by: 'PROTO'}}},
         ],
       },
-      typeNamedImports: {
-        quux: [{start, end, default: 'qux'}],
-        waldo: [{start, end, default: 'corge'}],
-        '@types/prototype': [
-          {start, end, names: {PROTO: {}}},
-          {start, end, names: {isPrototypeOf: {}}},
-        ],
-      },
+
       namespaceImports: {
         './maths.js': [{start, end, namespace: 'math'}],
         quux: [{start, end, namespace: 'bar', default: 'foo'}],
@@ -370,9 +367,85 @@ export {__proto__}`);
           {start, end, namespace: 'toString', default: 'propertyIsEnumerable'},
         ],
       },
+
+      dynamicImports: {
+        foo: [
+          {start, end},
+          {start, end},
+        ],
+        bar: [{start, end}],
+      },
+
+      requires: {
+        foo: [{start, end}],
+        bar: [
+          {start, end},
+          {start, end},
+        ],
+      },
+
+      typeNamedImports: {
+        quux: [{start, end, default: 'qux'}],
+        waldo: [{start, end, default: 'corge'}],
+        '@types/prototype': [
+          {start, end, names: {PROTO: {}}},
+          {start, end, names: {isPrototypeOf: {}}},
+        ],
+      },
+
       typeNamespaceImports: {
         react: [{start, end, namespace: 'React'}],
       },
+
+      typeDynamicImports: {
+        jquery: [
+          {start, end},
+          {start, end},
+        ],
+        qux: [{start, end}],
+      },
+
+      /**
+       * Reexports.
+       */
+
+      namedReexports: {
+        typescript: [{start, end, names: {ModuleKind: {}}, types: {Target: {by: 'ScriptTarget'}}}],
+        properties: [{start, end, types: {propertyIsEnumerable: {}}}],
+      },
+
+      namespaceReexports: {qux: [{start, end, namespace: 'FullQux'}]},
+
+      starReexports: {quux: [{start, end}]},
+
+      typeNamedReexports: {
+        prettier: [{start, end, names: {CPL: {by: 'Compiler'}}}],
+      },
+
+      typeNamespaceReexports: {
+        qux: [
+          {start, end, namespace: 'Qux'},
+          {start, end, namespace: 'AlsoQux'},
+        ],
+        bar: [
+          {start, end, namespace: 'PROTO'},
+          {start, end, namespace: '__lookupSetter__'},
+        ],
+      },
+
+      typeStarReexports: {
+        bar: [
+          {start, end},
+          {start, end},
+        ],
+      },
+
+      /**
+       * Exports.
+       */
+
+      defaultExport: {start, end},
+
       namedExports: [
         {start, end, names: {foo: {}, bar: {}}, types: {baz: {}}},
         {start, end},
@@ -381,13 +454,7 @@ export {__proto__}`);
         {start, end, names: {toString: {}}},
         {start, end, names: {PROTO: {}}},
       ],
-      namedReexports: {
-        typescript: [{start, end, names: {ModuleKind: {}}, types: {Target: {by: 'ScriptTarget'}}}],
-        properties: [{start, end, types: {propertyIsEnumerable: {}}}],
-      },
-      typeNamedReexports: {
-        prettier: [{start, end, names: {CPL: {by: 'Compiler'}}}],
-      },
+
       declarationExports: {
         garply: {start, end, kind: 'const'},
         SomeClass: {start, end, kind: 'class'},
@@ -424,6 +491,18 @@ export {__proto__}`);
         destructuringQux: {start, end, kind: 'destructuring let'},
         destructuringQuux: {start, end, kind: 'destructuring let'},
       },
+
+      typeNamedExports: [
+        {start, end},
+        {start, end, names: {corge: {by: 'garply'}}},
+      ],
+
+      typeExports: {
+        T: {start, end},
+        SomeType: {start, end},
+        D: {start, end, isDeclare: true},
+      },
+
       interfaceExports: {
         I: [
           {start, end},
@@ -433,11 +512,7 @@ export {__proto__}`);
         __defineSetter__: [{start, end}],
         DI: [{start, end, isDeclare: true}],
       },
-      typeExports: {
-        T: {start, end},
-        SomeType: {start, end},
-        D: {start, end, isDeclare: true},
-      },
+
       namespaceExports: {
         N: [
           {start, end},
@@ -447,6 +522,16 @@ export {__proto__}`);
         __defineGetter__: [{start, end}],
         DN: [{start, end, isDeclare: true}],
       },
+
+      commonJsNamespaceExport: {start, end},
+
+      commonJsExports: {
+        foo: {start, end, startsWithModule: true},
+        bar: {start, end},
+        baz: {start, end},
+        qux: {start, end},
+      },
+
       errors: {
         0: 'Cannot find namespace of `export type * as ... from ...` statement',
         1: 'Cannot find namespace of `export * as ... from ...` statement',
@@ -511,57 +596,6 @@ export {__proto__}`);
         60: 'Cannot find start of path string literal in `require(...)`',
         61: 'Cannot find end of `import(...)` statement',
         62: 'Cannot find end of `import(...)` statement',
-      },
-      starReexports: {quux: [{start, end}]},
-      typeNamespaceReexports: {
-        qux: [
-          {start, end, namespace: 'Qux'},
-          {start, end, namespace: 'AlsoQux'},
-        ],
-        bar: [
-          {start, end, namespace: 'PROTO'},
-          {start, end, namespace: '__lookupSetter__'},
-        ],
-      },
-      typeStarReexports: {
-        bar: [
-          {start, end},
-          {start, end},
-        ],
-      },
-      namespaceReexports: {qux: [{start, end, namespace: 'FullQux'}]},
-      defaultExport: {start, end},
-      typeNamedExports: [
-        {start, end},
-        {start, end, names: {corge: {by: 'garply'}}},
-      ],
-      dynamicImports: {
-        foo: [
-          {start, end},
-          {start, end},
-        ],
-        bar: [{start, end}],
-      },
-      typeDynamicImports: {
-        jquery: [
-          {start, end},
-          {start, end},
-        ],
-        qux: [{start, end}],
-      },
-      commonJsNamespaceExport: {start, end},
-      commonJsExports: {
-        foo: {start, end, startsWithModule: true},
-        bar: {start, end},
-        baz: {start, end},
-        qux: {start, end},
-      },
-      requires: {
-        foo: [{start, end}],
-        bar: [
-          {start, end},
-          {start, end},
-        ],
       },
     } satisfies typeof importsExports,
     'returns expected results and errors for all sort of statements',

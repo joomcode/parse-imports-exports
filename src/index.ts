@@ -9,7 +9,31 @@ import type {ImportsExports, MutableImportsExports, Options, Parse, ParseOptions
  */
 export const parseImportsExports = (source: string, options?: Options): ImportsExports => {
   const cacheKey = getCacheKey(options);
-  const importsExports: MutableImportsExports = {};
+  const importsExports: MutableImportsExports = {
+    namedImports: undefined,
+    namespaceImports: undefined,
+    dynamicImports: undefined,
+    requires: undefined,
+    typeNamedImports: undefined,
+    typeNamespaceImports: undefined,
+    typeDynamicImports: undefined,
+    namedReexports: undefined,
+    namespaceReexports: undefined,
+    starReexports: undefined,
+    typeNamedReexports: undefined,
+    typeNamespaceReexports: undefined,
+    typeStarReexports: undefined,
+    defaultExport: undefined,
+    namedExports: undefined,
+    declarationExports: undefined,
+    typeNamedExports: undefined,
+    typeExports: undefined,
+    interfaceExports: undefined,
+    namespaceExports: undefined,
+    commonJsNamespaceExport: undefined,
+    commonJsExports: undefined,
+    errors: undefined,
+  };
 
   let parse = parseCache[cacheKey];
 

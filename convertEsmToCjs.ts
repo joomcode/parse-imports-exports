@@ -10,7 +10,10 @@ import * as nodePath from 'node:path';
 const nodeJsProcess = process as {argv: string[]};
 
 const {readFileSync, readdirSync, writeFileSync} = nodeFs as {
-  readdirSync: (path: string, options?: {recursive?: boolean}) => readonly string[];
+  readdirSync: (
+    path: string,
+    options?: {encoding: 'utf8'; recursive?: boolean},
+  ) => readonly string[];
   readFileSync: (path: string, options: {encoding: 'utf8'}) => string;
   writeFileSync: (path: string, data: string) => void;
 };
@@ -29,7 +32,7 @@ if (paths.length === 0) {
 const replaceExtension = (fileName: string): string => fileName.replace('.js', '.cjs');
 
 for (const path of paths) {
-  const fileNames = readdirSync(path, {recursive: true});
+  const fileNames = readdirSync(path, {encoding: 'utf8', recursive: true});
 
   for (const fileName of fileNames) {
     if (!fileName.endsWith('.js')) {

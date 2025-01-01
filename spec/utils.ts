@@ -26,7 +26,7 @@ type AssertEqualExceptNumbers = (actual: object, expected: object, message: stri
 export const assertEqualExceptNumbers: AssertEqualExceptNumbers = (actual, expected, message) => {
   let originalErrors: Record<string, string> | undefined;
 
-  if ('errors' in actual) {
+  if ('errors' in actual && actual.errors != null) {
     originalErrors = actual.errors as Record<string, string>;
 
     const errors = {__proto__: null} as unknown as Record<string, string>;
@@ -110,6 +110,21 @@ export const getContentOfFilesInDirectory = async (
   }
 
   return contentOfFiles;
+};
+
+/**
+ * Get number of object keys with defined values.
+ */
+export const getNumberOfKeysWithDefinedValues = (someObject: object): number => {
+  let numberOfKeys = 0;
+
+  for (const value of Object.values(someObject)) {
+    if (value !== undefined) {
+      numberOfKeys += 1;
+    }
+  }
+
+  return numberOfKeys;
 };
 
 type Ok = (message: string) => void;

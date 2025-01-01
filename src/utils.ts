@@ -93,7 +93,7 @@ export const removeErrorsCausedByOverloading = (importsExports: MutableImportsEx
   }
 
   if (importsExports.errors !== undefined && Object.keys(importsExports.errors).length === 0) {
-    delete importsExports.errors;
+    importsExports.errors = undefined;
   }
 };
 

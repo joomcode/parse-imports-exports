@@ -1,19 +1,25 @@
 import {parseImportsExports} from '../src/index.js';
 
-import {assert, assertEqualExceptNumbers, end, start} from './utils.js';
+import {
+  assert,
+  assertEqualExceptNumbers,
+  end,
+  getNumberOfKeysWithDefinedValues,
+  start,
+} from './utils.js';
 
 export const testBasic = (): void => {
   assert(typeof parseImportsExports('') === 'object', 'returns an object for empty source');
 
   assert(
-    Object.keys(parseImportsExports('foo')).length === 0,
+    getNumberOfKeysWithDefinedValues(parseImportsExports('foo')) === 0,
     'returns an empty object for source without imports/exports',
   );
 
   const withImportError = parseImportsExports('import something;');
 
   assert(
-    Object.keys(withImportError).length === 1 &&
+    getNumberOfKeysWithDefinedValues(withImportError) === 1 &&
       Object.keys(withImportError.errors!).length === 1 &&
       withImportError.errors![0]!.startsWith('Cannot find end of `import` statement:'),
     'returns correct error of parsing import statement',
@@ -22,7 +28,7 @@ export const testBasic = (): void => {
   const withExportError = parseImportsExports('export type {something;');
 
   assert(
-    Object.keys(withExportError).length === 1 &&
+    getNumberOfKeysWithDefinedValues(withExportError) === 1 &&
       Object.keys(withExportError.errors!).length === 1 &&
       withExportError.errors![0]!.startsWith(
         'Cannot find end of `export type {...} ...` statement:',
@@ -55,7 +61,7 @@ const bar = await import('bar');
     {ignoreRequires: true},
   );
 
-  assert('requires' in withoutRequire === false, 'respects parse option `ignoreRequires`');
+  assert(withoutRequire.requires === undefined, 'respects parse option `ignoreRequires`');
 
   const withoutCommonJsExports = parseImportsExports(
     `
@@ -67,15 +73,15 @@ export default 2;
   );
 
   assert(
-    'commonJsNamespaceExport' in withoutCommonJsExports === false,
+    withoutCommonJsExports.commonJsNamespaceExport === undefined,
     'respects parse option `ignoreCommonJsExports`',
   );
 
   assert(
     Array.isArray(withoutRequire.dynamicImports?.['bar']) &&
-      !('errors' in withoutRequire) &&
-      'defaultExport' in withoutCommonJsExports &&
-      !('errors' in withoutCommonJsExports),
+      withoutRequire.errors === undefined &&
+      withoutCommonJsExports.defaultExport !== undefined &&
+      withoutCommonJsExports.errors === undefined,
     'parses unignored statements',
   );
 
@@ -91,7 +97,7 @@ exports.baz = 12
 `);
 
   assert(
-    !('errors' in withCommonJs) &&
+    withCommonJs.errors === undefined &&
       withCommonJs.commonJsExports?.['foo']?.start! > 0 &&
       withCommonJs.commonJsExports?.['baz']?.start! > 0,
     'respects transpiler-generated CommonJS scripts',

@@ -100,7 +100,7 @@ const commonJsExportStatement: Statement = {
  * Statement for parsing dynamic import call (`import(...)`).
  */
 const dynamicImportStatement: Statement = {
-  canIncludeComments: false,
+  canIncludeComments: true,
   onError: onDynamicImportError as OnParse,
   onParse: onDynamicImportParse as OnParse,
   tokens: ['\\bimport\\([\'"]', '[\'"]\\)'],
@@ -122,7 +122,7 @@ const regexpLiteralStatement: Statement = {
  * Statement for parsing require call (`require(...)`).
  */
 const requireStatement: Statement = {
-  canIncludeComments: false,
+  canIncludeComments: true,
   onError: onRequireError as OnParse,
   onParse: onRequireParse as OnParse,
   tokens: ['\\brequire\\([\'"]', '[\'"]\\)'],

@@ -50,5 +50,5 @@
   },
   "sideEffects": false,
   "type": "module",
-  "types": "index.d.ts"
+  "types": "./index.d.ts"
 }

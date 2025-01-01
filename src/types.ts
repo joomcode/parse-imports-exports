@@ -61,97 +61,131 @@ export type Kind =
  */
 export type MutableImportsExports = {
   /**
-   * `(module.)exports.foo = ...`.
+   * Imports.
    */
-  commonJsExports?: Record<Name, CommonJsExport>;
-  /**
-   * `module.exports = ...`.
-   */
-  commonJsNamespaceExport?: CommonJsNamespaceExport;
-  /**
-   * `export (class|const|function|var...) ...`.
-   */
-  declarationExports?: Record<Name, DeclarationExport>;
-  /**
-   * `export default ...`.
-   */
-  defaultExport?: DefaultExport;
-  /**
-   * `import(...)`.
-   */
-  dynamicImports?: Record<Path, readonly DynamicImport[]>;
-  /**
-   * Syntax errors of module.
-   */
-  errors?: Record<number, string>;
-  /**
-   * `export interface ...`.
-   */
-  interfaceExports?: Record<Name, readonly InterfaceExport[]>;
-  /**
-   * `export {...}`.
-   */
-  namedExports?: readonly NamedExport[];
+
   /**
    * `import {...} from ...`.
    */
-  namedImports?: Record<Path, readonly NamedImport[]>;
-  /**
-   * `export {...} from ...`.
-   */
-  namedReexports?: Record<Name, readonly NamedReexport[]>;
-  /**
-   * `export namespace ...`.
-   */
-  namespaceExports?: Record<Name, readonly NamespaceExport[]>;
+  namedImports: Record<Path, readonly NamedImport[]> | undefined;
+
   /**
    * `import * as ...`.
    */
-  namespaceImports?: Record<Path, readonly NamespaceImport[]>;
+  namespaceImports: Record<Path, readonly NamespaceImport[]> | undefined;
+
   /**
-   * `export * as ... from ...`.
+   * `import(...)`.
    */
-  namespaceReexports?: Record<Path, readonly NamespaceReexport[]>;
+  dynamicImports: Record<Path, readonly DynamicImport[]> | undefined;
+
   /**
    * `require(...)`.
    */
-  requires?: Record<Path, readonly Require[]>;
-  /**
-   * `export * from ...`.
-   */
-  starReexports?: Record<Path, readonly StarReexport[]>;
-  /**
-   * `typeof import(...)`.
-   */
-  typeDynamicImports?: Record<Path, readonly DynamicImport[]>;
-  /**
-   * `export type ...`.
-   */
-  typeExports?: Record<Name, TypeExport>;
-  /**
-   * `export type {...}`.
-   */
-  typeNamedExports?: readonly TypeNamedExport[];
+  requires: Record<Path, readonly Require[]> | undefined;
+
   /**
    * `import type {...} from ...`.
    */
-  typeNamedImports?: Record<Path, readonly TypeNamedImport[]>;
-  /**
-   * `export type {...} from ...`.
-   */
-  typeNamedReexports?: Record<Path, readonly TypeNamedReexport[]>;
+  typeNamedImports: Record<Path, readonly TypeNamedImport[]> | undefined;
+
   /**
    * `import type * as ...`.
    */
-  typeNamespaceImports?: Record<Path, readonly TypeNamespaceImport[]>;
+  typeNamespaceImports: Record<Path, readonly TypeNamespaceImport[]> | undefined;
+
+  /**
+   * `typeof import(...)`.
+   */
+  typeDynamicImports: Record<Path, readonly DynamicImport[]> | undefined;
+
+  /**
+   * Reexports.
+   */
+
+  /**
+   * `export {...} from ...`.
+   */
+  namedReexports: Record<Name, readonly NamedReexport[]> | undefined;
+
+  /**
+   * `export * as ... from ...`.
+   */
+  namespaceReexports: Record<Path, readonly NamespaceReexport[]> | undefined;
+
+  /**
+   * `export * from ...`.
+   */
+  starReexports: Record<Path, readonly StarReexport[]> | undefined;
+
+  /**
+   * `export type {...} from ...`.
+   */
+  typeNamedReexports: Record<Path, readonly TypeNamedReexport[]> | undefined;
+
   /**
    * `export type * as ... from ...`.
    */
-  typeNamespaceReexports?: Record<Path, readonly TypeNamespaceReexport[]>;
+  typeNamespaceReexports: Record<Path, readonly TypeNamespaceReexport[]> | undefined;
+
   /**
    * `export type * from ...`.
    */
-  typeStarReexports?: Record<Path, readonly TypeStarReexport[]>;
+  typeStarReexports: Record<Path, readonly TypeStarReexport[]> | undefined;
+
+  /**
+   * Exports.
+   */
+
+  /**
+   * `export default ...`.
+   */
+  defaultExport: DefaultExport | undefined;
+
+  /**
+   * `export {...}`.
+   */
+  namedExports: readonly NamedExport[] | undefined;
+
+  /**
+   * `export (class|const|function|var...) ...`.
+   */
+  declarationExports: Record<Name, DeclarationExport> | undefined;
+
+  /**
+   * `export type {...}`.
+   */
+  typeNamedExports: readonly TypeNamedExport[] | undefined;
+
+  /**
+   * `export type ...`.
+   */
+  typeExports: Record<Name, TypeExport> | undefined;
+
+  /**
+   * `export interface ...`.
+   */
+  interfaceExports: Record<Name, readonly InterfaceExport[]> | undefined;
+
+  /**
+   * `export namespace ...`.
+   */
+  namespaceExports: Record<Name, readonly NamespaceExport[]> | undefined;
+
+  /**
+   * `module.exports = ...`.
+   */
+  commonJsNamespaceExport: CommonJsNamespaceExport | undefined;
+
+  /**
+   * `(module.)exports.foo = ...`.
+   */
+  commonJsExports: Record<Name, CommonJsExport> | undefined;
+
+  /**
+   * Syntax errors of module.
+   */
+  errors: Record<number, string> | undefined;
 };
 
 /**
