@@ -118,4 +118,48 @@ exports.baz = 12
     Object.keys(withCommonJsErrors.errors || {}).length === 2,
     'returns errors in transpiler-generated CommonJS scripts',
   );
+
+  const requireWithComments = parseImportsExports(`
+const foo = require( /* some 'comment' */ 'bar'/* also "comment" */);
+`);
+
+  assert(
+    requireWithComments.errors === undefined && requireWithComments.requires?.['bar'] !== undefined,
+    'parses "require" with comments inside',
+  );
+
+  const importWithComments = parseImportsExports(`
+const foo = import( 'bar' /* 'comment" */)
+`);
+
+  assert(
+    importWithComments.errors === undefined &&
+      importWithComments.dynamicImports?.['bar'] !== undefined,
+    'parses "import(...)" with comments inside',
+  );
+
+  const typeImportWithComments = parseImportsExports(`
+type Foo = typeof import(/* some
+ "comment' */"baz" /* also 'comment" */)
+`);
+
+  assert(
+    typeImportWithComments.errors === undefined &&
+      typeImportWithComments.typeDynamicImports?.['baz'] !== undefined,
+    'parses "typeof import" with comments inside',
+  );
+
+  const importWithError = parseImportsExports(`
+const foo = import( /* 'comment"
+ */"qux' /* 'comment" */);
+`);
+
+  const errorKey = Object.keys(importWithError.errors ?? {})[0];
+
+  assert(
+    importWithError.errors?.[Number(errorKey)]?.split(':')[0] ===
+      "Cannot find start of path string literal of dynamic `import('...')`" &&
+      importWithComments.dynamicImports?.['qux'] === undefined,
+    'find error in "import(...)" with comments inside',
+  );
 };

@@ -320,6 +320,8 @@ import(");
 
 typeof import("foo)
 
+require("foo);
+
 export { toString };
 
 export {__proto__}`);
@@ -586,16 +588,17 @@ export {__proto__}`);
         50: 'Duplicate exported declaration `async function quadrupleF`',
         51: 'Cannot parse destructuring names in `export const ...` statement',
         52: 'Cannot find end of `import` statement',
-        53: 'Cannot find start of path string literal of dynamic import',
-        54: 'Cannot find start of path string literal of dynamic import of type',
+        53: 'Cannot find start of path string literal of dynamic `import("...")`',
+        54: "Cannot find start of path string literal of dynamic `import('...')` of type",
         55: 'Duplicate exported name `baz` in `module.exports.... = ...` statement',
         56: 'Cannot parse identifier of `exports.... = ...` statement',
         57: '`exports = ...` is not valid CommonJS namespace export (use `module.exports = ...` instead)',
         58: 'Duplicate CommonJS namespace export (`module.exports = ...`)',
         59: 'Cannot find end (equal sign) of `exports.... = ...` statement',
-        60: 'Cannot find start of path string literal in `require(...)`',
-        61: 'Cannot find end of `import(...)` statement',
-        62: 'Cannot find end of `import(...)` statement',
+        60: "Cannot find start of path string literal in `require('...')`",
+        61: 'Cannot find end of path string literal of dynamic `import(...)`',
+        62: 'Cannot find end of path string literal of dynamic `import(...)` of type',
+        63: 'Cannot find end of path string literal in `require(...)`',
       },
     } satisfies typeof importsExports,
     'returns expected results and errors for all sort of statements',

@@ -103,7 +103,7 @@ const dynamicImportStatement: Statement = {
   canIncludeComments: true,
   onError: onDynamicImportError as OnParse,
   onParse: onDynamicImportParse as OnParse,
-  tokens: ['\\bimport\\([\'"]', '[\'"]\\)'],
+  tokens: ['\\bimport\\(', '[\'"]', '([\'"])|($)'],
   shouldSearchBeforeComments: true,
 };
 
@@ -125,7 +125,7 @@ const requireStatement: Statement = {
   canIncludeComments: true,
   onError: onRequireError as OnParse,
   onParse: onRequireParse as OnParse,
-  tokens: ['\\brequire\\([\'"]', '[\'"]\\)'],
+  tokens: ['\\brequire\\(', '[\'"]', '([\'"])|($)'],
   shouldSearchBeforeComments: true,
 };
 

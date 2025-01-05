@@ -15,21 +15,32 @@ export const onRequireError: OnParse<MutableImportsExports, 1> = (
 /**
  * Parses `require('...')`/`require("...")` statement.
  */
-export const onRequireParse: OnParse<MutableImportsExports, 2> = (
+export const onRequireParse: OnParse<MutableImportsExports, 3> = (
   importsExports,
   source,
-  {start: requireStart, end: unparsedStart},
+  {start: requireStart},
+  {start: unparsedStart},
   {start: unparsedEnd, end: requireEnd, token: endToken},
 ) => {
-  const unparsed = source.slice(unparsedStart - 1, unparsedEnd);
-  const quoteCharacter = endToken[0]!;
+  const unparsed = source.slice(unparsedStart, unparsedEnd);
+  const quoteCharacter = endToken[0];
+
+  if (quoteCharacter === undefined) {
+    return addError(
+      importsExports,
+      'Cannot find end of path string literal in `require(...)`',
+      source,
+      requireStart,
+      requireEnd,
+    );
+  }
 
   const {from, index} = parseFrom(quoteCharacter, unparsed);
 
   if (index !== 0) {
     return addError(
       importsExports,
-      'Cannot find start of path string literal in `require(...)`',
+      `Cannot find start of path string literal in \`require(${quoteCharacter}...${quoteCharacter})\``,
       source,
       requireStart,
       requireEnd,
