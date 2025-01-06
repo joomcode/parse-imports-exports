@@ -3,22 +3,6 @@ import {addError} from './utils.js';
 import type {MutableImportsExports, OnCommentError, OnGlobalError, OnParse} from './types';
 
 /**
- * Adds error of parsing string literal started with backtick.
- */
-export const onBacktickError: OnParse<MutableImportsExports, 1> = (
-  importsExports,
-  source,
-  {start, end},
-) =>
-  addError(
-    importsExports,
-    'Cannot find end of string literal started with backtick',
-    source,
-    start,
-    end,
-  );
-
-/**
  * Adds error of parsing string literal started with double quote.
  */
 export const onDoubleQuoteError: OnParse<MutableImportsExports, 1> = (

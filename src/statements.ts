@@ -1,10 +1,10 @@
+import {onBacktickError, onBacktickParse} from './backtickString.js';
 import {onCommonJsExportError, onCommonJsExportParse} from './commonJsExport.js';
 import {onDeclarationExportError, onDeclarationExportParse} from './declarationExport.js';
 import {onDynamicImportError, onDynamicImportParse} from './dynamicImport.js';
 import {onImportError, onImportParse} from './import.js';
 import {onNamedExportError, onNamedExportParse} from './namedExport.js';
 import {
-  onBacktickError,
   onDoubleQuoteError,
   onMultilineCommentError,
   onSinglelineCommentError,
@@ -148,6 +148,7 @@ const stringLiteralStatements: readonly Statement[] = [
   {
     canIncludeComments: false,
     onError: onBacktickError as OnParse,
+    onParse: onBacktickParse as OnParse,
     tokens: ['`', '(?<!\\\\)`'],
     shouldSearchBeforeComments: true,
   },

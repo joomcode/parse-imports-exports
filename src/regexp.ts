@@ -17,11 +17,11 @@ export const onRegexpError: OnParse<MutableImportsExports, 1> = (
 export const onRegexpParse: OnParse<MutableImportsExports, 2> = (
   _importsExports,
   source,
-  {end: regexpBodyStart},
+  parsedToken,
   {end: regexpEnd, token},
 ) => {
   if (token !== '/') {
-    return regexpBodyStart;
+    return parsedToken.end;
   }
 
   if (source[regexpEnd] === '*') {

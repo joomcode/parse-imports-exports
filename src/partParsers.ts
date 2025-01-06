@@ -85,13 +85,13 @@ export const parseFrom = (
   let index = sourceWithString.length - 1;
 
   for (; index >= 0; index -= 1) {
-    const character = sourceWithString[index];
+    const char = sourceWithString[index];
 
-    if (character === '\\') {
+    if (char === '\\') {
       hasBackslash = true;
     }
 
-    if (character === quoteCharacter && sourceWithString[index - 1] !== '\\') {
+    if (char === quoteCharacter && sourceWithString[index - 1] !== '\\') {
       break;
     }
   }

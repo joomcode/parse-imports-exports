@@ -162,4 +162,13 @@ const foo = import( /* 'comment"
       importWithComments.dynamicImports?.['qux'] === undefined,
     'find error in "import(...)" with comments inside',
   );
+
+  const backtickString = parseImportsExports(
+    "const path = createPath(`${lang ? `/${lang}` : '}'}/products\\`/require('foo')`)",
+  );
+
+  assert(
+    backtickString.errors === undefined && backtickString.requires === undefined,
+    'parsed nested string literal started with backtick',
+  );
 };
