@@ -58,15 +58,11 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
 
   let imports = importsExports[key];
 
-  if (imports === undefined) {
-    importsExports[key] = imports = {__proto__: null} as ExcludeUndefined<typeof imports>;
-  }
+  imports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof imports>;
 
   let importsList = imports[from];
 
-  if (importsList === undefined) {
-    imports[from] = importsList = [];
-  }
+  importsList ??= imports[from] = [];
 
   (importsList as DynamicImport[]).push(parsedImport);
 };

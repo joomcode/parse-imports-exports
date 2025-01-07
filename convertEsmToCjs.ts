@@ -39,6 +39,7 @@ for (const path of paths) {
       continue;
     }
 
+    const allExportedNames: string[] = [];
     const filePath = join(path, fileName);
     let fileContent = readFileSync(filePath, {encoding: 'utf8'});
 
@@ -49,17 +50,54 @@ for (const path of paths) {
     );
 
     fileContent = fileContent.replace(
-      /^export {([^}]+)} from ([^;]*);/gim,
-      (_match, names, modulePath) =>
-        `{\nconst {${names}} = require(${replaceExtension(modulePath)});\nObject.assign(exports, {${names}});\n};`,
+      /^import \* as ([^ ]+) from ([^;]*);/gim,
+      (_match, name, modulePath) => `const ${name} = require(${replaceExtension(modulePath)});`,
     );
 
     fileContent = fileContent.replace(
-      /^export const ([^ ]+) /gim,
-      (_match, name) => `const ${name} = exports.${name} `,
+      /^import ([^ ]+) from ([^;]*);/gim,
+      (_match, name, modulePath) =>
+        `const ${name} = require(${replaceExtension(modulePath)}).default;`,
     );
 
-    fileContent = `'use strict';\n${fileContent}`;
+    fileContent = fileContent.replace(
+      /^export {([^}]+)} from ([^;]*);/gim,
+      (_match, names, modulePath) => {
+        const exported: string = names
+          .replace(' as default', ': __default')
+          .replaceAll(' as ', ': ');
+        const exportedNames = exported.split(',').map((name) => {
+          name = name.includes(':') ? name.split(':')[1]! : name;
+          name = name.trim();
+
+          allExportedNames.push(name === '__default' ? 'default' : name);
+
+          return name === '__default' ? 'default: __default' : name;
+        });
+
+        const path = replaceExtension(modulePath);
+        const requiring = `const {${exported}} = require(${path});`;
+        const assigning = `Object.assign(exports, {${exportedNames.join(', ')}});`;
+
+        return `{\n${requiring}\n${assigning}\n};`;
+      },
+    );
+
+    fileContent = fileContent.replace(/^export const ([^ ]+) /gim, (_match, name) => {
+      allExportedNames.push(name);
+
+      return `const ${name} = exports.${name} `;
+    });
+
+    fileContent = fileContent.replace(/^export default /gim, () => {
+      allExportedNames.push('default');
+
+      return 'exports.default = ';
+    });
+
+    const reexports = allExportedNames.map((name) => `exports.${name} = undefined;`).join('\n');
+
+    fileContent = `'use strict';\n${reexports}\n${fileContent}`;
 
     const newFilePath = replaceExtension(filePath);
 

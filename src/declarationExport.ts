@@ -5,6 +5,7 @@ import type {
   ExcludeUndefined,
   Kind,
   MutableImportsExports,
+  Name,
   NamespaceReexport,
   OnParse,
   StarReexport,
@@ -56,7 +57,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    let namespace: string | undefined;
+    let namespace: Name | undefined;
 
     if (unparsed.startsWith('* as ')) {
       unparsed = unparsed.slice(5).trim();
@@ -73,7 +74,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         );
       }
 
-      namespace = unparsed.slice(0, spaceIndex);
+      namespace = unparsed.slice(0, spaceIndex) as Name;
       unparsed = unparsed.slice(spaceIndex + 1);
     }
 
@@ -126,15 +127,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
     let reexports = importsExports[key];
 
-    if (reexports === undefined) {
-      importsExports[key] = reexports = {__proto__: null} as ExcludeUndefined<typeof reexports>;
-    }
+    reexports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof reexports>;
 
     let reexportsList = reexports[from];
 
-    if (reexportsList === undefined) {
-      reexports[from] = reexportsList = [];
-    }
+    reexportsList ??= reexports[from] = [];
 
     (reexportsList as object[]).push(parsedReexport);
 
@@ -172,10 +169,10 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    typeExports[identifier] = {start: exportStart, end: exportEnd};
+    typeExports[identifier as Name] = {start: exportStart, end: exportEnd};
 
     if (isDeclare) {
-      typeExports[identifier]!.isDeclare = true;
+      typeExports[identifier as Name]!.isDeclare = true;
     }
 
     return;
@@ -216,21 +213,17 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    const name = unparsed.slice(0, nameIndex);
+    const name = unparsed.slice(0, nameIndex) as Name;
 
     let {interfaceExports} = importsExports;
 
-    if (interfaceExports === undefined) {
-      importsExports.interfaceExports = interfaceExports = {__proto__: null} as ExcludeUndefined<
-        typeof interfaceExports
-      >;
-    }
+    interfaceExports ??= importsExports.interfaceExports = {__proto__: null} as ExcludeUndefined<
+      typeof interfaceExports
+    >;
 
     let exportsList = interfaceExports[name];
 
-    if (exportsList === undefined) {
-      interfaceExports[name] = exportsList = [];
-    }
+    exportsList ??= interfaceExports[name] = [];
 
     const interfaceExport: ExcludeUndefined<typeof exportsList>[number] = {
       start: exportStart,
@@ -259,21 +252,17 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    const name = unparsed.slice(0, nameIndex);
+    const name = unparsed.slice(0, nameIndex) as Name;
 
     let {namespaceExports} = importsExports;
 
-    if (namespaceExports === undefined) {
-      importsExports.namespaceExports = namespaceExports = {__proto__: null} as ExcludeUndefined<
-        typeof namespaceExports
-      >;
-    }
+    namespaceExports ??= importsExports.namespaceExports = {__proto__: null} as ExcludeUndefined<
+      typeof namespaceExports
+    >;
 
     let exportsList = namespaceExports[name];
 
-    if (exportsList === undefined) {
-      namespaceExports[name] = exportsList = [];
-    }
+    exportsList ??= namespaceExports[name] = [];
 
     const namespaceExport: ExcludeUndefined<typeof exportsList>[number] = {
       start: exportStart,
@@ -291,7 +280,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
   let isAsync = false;
   let kind: Kind | undefined;
-  const names: string[] = [];
+  const names: Name[] = [];
 
   switch (identifier) {
     case 'const':
@@ -350,7 +339,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         kind = `declare ${kind}`;
       }
 
-      names[0] = unparsed.slice(0, nameIndex);
+      names[0] = unparsed.slice(0, nameIndex) as Name;
 
       if (identifier === 'const' && names[0] === 'enum') {
         unparsed = unparsed.slice(4).trim();
@@ -373,7 +362,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
           kind = `declare ${kind}`;
         }
 
-        names[0] = unparsed.slice(0, constEnumNameIndex);
+        names[0] = unparsed.slice(0, constEnumNameIndex) as Name;
       }
 
       break;
@@ -409,7 +398,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         kind = `declare ${kind}`;
       }
 
-      names[0] = unparsed.slice(0, abstractClassNameIndex);
+      names[0] = unparsed.slice(0, abstractClassNameIndex) as Name;
       break;
 
     // @ts-expect-error
@@ -473,7 +462,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         );
       }
 
-      names[0] = unparsed.slice(0, functionNameIndex);
+      names[0] = unparsed.slice(0, functionNameIndex) as Name;
       break;
 
     default:
@@ -488,11 +477,9 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
   let {declarationExports} = importsExports;
 
-  if (declarationExports === undefined) {
-    importsExports.declarationExports = declarationExports = {__proto__: null} as ExcludeUndefined<
-      typeof declarationExports
-    >;
-  }
+  declarationExports ??= importsExports.declarationExports = {
+    __proto__: null,
+  } as ExcludeUndefined<typeof declarationExports>;
 
   for (const name of names) {
     if (name in declarationExports) {

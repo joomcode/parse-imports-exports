@@ -54,7 +54,7 @@ export const parseImportsExports = (source: string, options?: Options): ImportsE
 
 export type {ImportsExports, Options};
 
-export type {Kind} from './types';
+export type {Kind, Name, Path} from './types';
 
 /**
  * Base options of parse function.

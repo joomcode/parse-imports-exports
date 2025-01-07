@@ -4,6 +4,7 @@ import {addError, spacesRegExp, stripComments} from './utils.js';
 import type {
   ExcludeUndefined,
   MutableImportsExports,
+  Name,
   Names,
   NamedImport,
   NamespaceImport,
@@ -83,7 +84,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
       namesString = namesString.slice(0, braceCloseIndex).trim();
 
-      const namesList = namesString.split(',');
+      const namesList = namesString.split(',') as Name[];
 
       let names: Names | undefined;
       let types: Names | undefined;
@@ -91,13 +92,13 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
       for (let name of namesList) {
         let isType = false;
 
-        name = name.trim();
+        name = name.trim() as Name;
 
         if (name === '') {
           continue;
         }
 
-        const nameObject: Names[string] = {};
+        const nameObject: Names[Name] = {};
 
         if (name.startsWith('type ')) {
           if (isTypeImport) {
@@ -113,20 +114,20 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
           }
 
           isType = true;
-          name = name.slice(5);
+          name = name.slice(5) as Name;
         }
 
         const asIndex = name.indexOf(' as ');
 
         if (asIndex >= 0) {
-          nameObject.by = name.slice(0, asIndex);
+          nameObject.by = name.slice(0, asIndex) as Name;
 
-          name = name.slice(asIndex + 4);
+          name = name.slice(asIndex + 4) as Name;
         }
 
         if (isType) {
           if (types === undefined) {
-            types = {__proto__: null as unknown as object};
+            types = {__proto__: null} as Names;
           } else if (name in types) {
             return addError(
               importsExports,
@@ -140,7 +141,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
           types[name] = nameObject;
         } else {
           if (names === undefined) {
-            names = {__proto__: null as unknown as object};
+            names = {__proto__: null} as Names;
           } else if (name in names) {
             return addError(
               importsExports,
@@ -164,7 +165,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
       }
     }
   } else {
-    (parsedImport as NamespaceImport).namespace = unparsed.slice(namespaceIndex + 5);
+    (parsedImport as NamespaceImport).namespace = unparsed.slice(namespaceIndex + 5) as Name;
     key = 'namespaceImports';
 
     unparsed = unparsed.slice(0, namespaceIndex);
@@ -191,7 +192,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    parsedImport.default = unparsed;
+    parsedImport.default = unparsed as Name;
   }
 
   if (isTypeImport) {
@@ -200,15 +201,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   let imports = importsExports[key];
 
-  if (imports === undefined) {
-    importsExports[key] = imports = {__proto__: null} as ExcludeUndefined<typeof imports>;
-  }
+  imports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof imports>;
 
   let importsList = imports[from];
 
-  if (importsList === undefined) {
-    imports[from] = importsList = [];
-  }
+  importsList ??= imports[from] = [];
 
   (importsList as object[]).push(parsedImport);
 };

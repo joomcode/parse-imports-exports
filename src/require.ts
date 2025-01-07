@@ -51,15 +51,11 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
 
   let {requires} = importsExports;
 
-  if (requires === undefined) {
-    importsExports.requires = requires = {__proto__: null} as ExcludeUndefined<typeof requires>;
-  }
+  requires ??= importsExports.requires = {__proto__: null} as ExcludeUndefined<typeof requires>;
 
   let requiresList = requires[from];
 
-  if (requiresList === undefined) {
-    requires[from] = requiresList = [];
-  }
+  requiresList ??= requires[from] = [];
 
   (requiresList as Require[]).push(parsedRequire);
 };

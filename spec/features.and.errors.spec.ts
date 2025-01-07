@@ -2,6 +2,8 @@ import {parseImportsExports} from '../src/index.js';
 
 import {assert, assertEqualExceptNumbers, end, start} from './utils.js';
 
+import type {Name, Path} from '../src';
+
 export const testFeaturesAndErrors = (): void => {
   const importsExports = parseImportsExports(`
 import {foo, bar} from 'ba\\'z';
@@ -334,77 +336,85 @@ export {__proto__}`);
        */
 
       namedImports: {
-        "ba'z": [{start, end, names: {foo: {}, bar: {}}}],
-        jquery: [{start, end}],
-        PROTO: [{start, end}],
-        constructor: [{start, end}],
-        garply: [
+        ["ba'z" as Path]: [{start, end, names: {['foo' as Name]: {}, ['bar' as Name]: {}}}],
+        ['jquery' as Path]: [{start, end}],
+        ['PROTO' as Path]: [{start, end}],
+        ['constructor' as Path]: [{start, end}],
+        ['garply' as Path]: [
           {
             start,
             end,
             names: {
-              asBaz: {by: 'baz'},
-              grault: {},
-              corge: {},
+              ['asBaz' as Name]: {by: 'baz' as Name},
+              ['grault' as Name]: {},
+              ['corge' as Name]: {},
             },
-            types: {qux: {}, asWaldo: {by: 'waldo'}, asQuux: {by: 'quux'}},
-            default: 'bar',
+            types: {
+              ['qux' as Name]: {},
+              ['asWaldo' as Name]: {by: 'waldo' as Name},
+              ['asQuux' as Name]: {by: 'quux' as Name},
+            },
+            default: 'bar' as Name,
           },
-          {start, end, default: 'Garply'},
+          {start, end, default: 'Garply' as Name},
         ],
-        '': [{start, end}],
-        waldo: [{start, end, default: 'name'}],
-        prototype: [
-          {start, end, names: {PROTO: {by: 'PROTO'}}},
-          {start, end, names: {__lookupGetter__: {by: 'hasOwnProperty'}}},
-          {start, end, names: {PROTO: {}, prototype: {by: 'PROTO'}}},
+        ['' as Path]: [{start, end}],
+        ['waldo' as Path]: [{start, end, default: 'name' as Name}],
+        ['prototype' as Path]: [
+          {start, end, names: {['PROTO' as Name]: {by: 'PROTO' as Name}}},
+          {start, end, names: {['__lookupGetter__' as Name]: {by: 'hasOwnProperty' as Name}}},
+          {
+            start,
+            end,
+            names: {['PROTO' as Name]: {}, ['prototype' as Name]: {by: 'PROTO' as Name}},
+          },
         ],
       },
 
       namespaceImports: {
-        './maths.js': [{start, end, namespace: 'math'}],
-        quux: [{start, end, namespace: 'bar', default: 'foo'}],
-        prototype: [
-          {start, end, namespace: 'PROTO', default: 'PROTO'},
-          {start, end, namespace: 'toString', default: 'propertyIsEnumerable'},
+        ['./maths.js' as Path]: [{start, end, namespace: 'math' as Name}],
+        ['quux' as Path]: [{start, end, namespace: 'bar' as Name, default: 'foo' as Name}],
+        ['prototype' as Path]: [
+          {start, end, namespace: 'PROTO' as Name, default: 'PROTO' as Name},
+          {start, end, namespace: 'toString' as Name, default: 'propertyIsEnumerable' as Name},
         ],
       },
 
       dynamicImports: {
-        foo: [
+        ['foo' as Path]: [
           {start, end},
           {start, end},
         ],
-        bar: [{start, end}],
+        ['bar' as Path]: [{start, end}],
       },
 
       requires: {
-        foo: [{start, end}],
-        bar: [
+        ['foo' as Path]: [{start, end}],
+        ['bar' as Path]: [
           {start, end},
           {start, end},
         ],
       },
 
       typeNamedImports: {
-        quux: [{start, end, default: 'qux'}],
-        waldo: [{start, end, default: 'corge'}],
-        '@types/prototype': [
-          {start, end, names: {PROTO: {}}},
-          {start, end, names: {isPrototypeOf: {}}},
+        ['quux' as Path]: [{start, end, default: 'qux' as Name}],
+        ['waldo' as Path]: [{start, end, default: 'corge' as Name}],
+        ['@types/prototype' as Path]: [
+          {start, end, names: {['PROTO' as Name]: {}}},
+          {start, end, names: {['isPrototypeOf' as Name]: {}}},
         ],
       },
 
       typeNamespaceImports: {
-        react: [{start, end, namespace: 'React'}],
+        ['react' as Path]: [{start, end, namespace: 'React' as Name}],
       },
 
       typeDynamicImports: {
-        jquery: [
+        ['jquery' as Path]: [
           {start, end},
           {start, end},
         ],
-        qux: [{start, end}],
+        ['qux' as Path]: [{start, end}],
       },
 
       /**
@@ -412,31 +422,38 @@ export {__proto__}`);
        */
 
       namedReexports: {
-        typescript: [{start, end, names: {ModuleKind: {}}, types: {Target: {by: 'ScriptTarget'}}}],
-        properties: [{start, end, types: {propertyIsEnumerable: {}}}],
+        ['typescript' as Path]: [
+          {
+            start,
+            end,
+            names: {['ModuleKind' as Name]: {}},
+            types: {['Target' as Name]: {by: 'ScriptTarget' as Name}},
+          },
+        ],
+        ['properties' as Path]: [{start, end, types: {['propertyIsEnumerable' as Name]: {}}}],
       },
 
-      namespaceReexports: {qux: [{start, end, namespace: 'FullQux'}]},
+      namespaceReexports: {['qux' as Path]: [{start, end, namespace: 'FullQux' as Name}]},
 
-      starReexports: {quux: [{start, end}]},
+      starReexports: {['quux' as Path]: [{start, end}]},
 
       typeNamedReexports: {
-        prettier: [{start, end, names: {CPL: {by: 'Compiler'}}}],
+        ['prettier' as Path]: [{start, end, names: {['CPL' as Name]: {by: 'Compiler' as Name}}}],
       },
 
       typeNamespaceReexports: {
-        qux: [
-          {start, end, namespace: 'Qux'},
-          {start, end, namespace: 'AlsoQux'},
+        ['qux' as Path]: [
+          {start, end, namespace: 'Qux' as Name},
+          {start, end, namespace: 'AlsoQux' as Name},
         ],
-        bar: [
-          {start, end, namespace: 'PROTO'},
-          {start, end, namespace: '__lookupSetter__'},
+        ['bar' as Path]: [
+          {start, end, namespace: 'PROTO' as Name},
+          {start, end, namespace: '__lookupSetter__' as Name},
         ],
       },
 
       typeStarReexports: {
-        bar: [
+        ['bar' as Path]: [
           {start, end},
           {start, end},
         ],
@@ -449,89 +466,99 @@ export {__proto__}`);
       defaultExport: {start, end},
 
       namedExports: [
-        {start, end, names: {foo: {}, bar: {}}, types: {baz: {}}},
+        {
+          start,
+          end,
+          names: {['foo' as Name]: {}, ['bar' as Name]: {}},
+          types: {['baz' as Name]: {}},
+        },
         {start, end},
-        {start, end, names: {waldo: {by: 'baz'}}, types: {bar: {by: 'foo'}}},
-        {start, end, types: {PROTO: {}}},
-        {start, end, names: {toString: {}}},
-        {start, end, names: {PROTO: {}}},
+        {
+          start,
+          end,
+          names: {['waldo' as Name]: {by: 'baz' as Name}},
+          types: {['bar' as Name]: {by: 'foo' as Name}},
+        },
+        {start, end, types: {['PROTO' as Name]: {}}},
+        {start, end, names: {['toString' as Name]: {}}},
+        {start, end, names: {['PROTO' as Name]: {}}},
       ],
 
       declarationExports: {
-        garply: {start, end, kind: 'const'},
-        SomeClass: {start, end, kind: 'class'},
-        callback: {start, end, kind: 'let'},
-        f: {start, end, kind: 'function'},
-        numbersGenerator: {start, end, kind: 'function*'},
-        asyncCallback: {start, end, kind: 'async function'},
-        asyncGenerator: {start, end, kind: 'async function*'},
-        PROTO: {start, end, kind: 'const'},
-        valueOf: {start, end, kind: 'var' as const},
-        toLocaleString: {start, end, kind: 'async function' as const},
-        y: {start, end, kind: 'var'},
-        corge: {start, end, kind: 'declare const'},
-        DC: {start, end, kind: 'declare class'},
-        dl: {start, end, kind: 'declare let'},
-        dv: {start, end, kind: 'declare var'},
-        df: {start, end, kind: 'declare function'},
-        AC: {start, end, kind: 'abstract class'},
-        DAC: {start, end, kind: 'declare abstract class'},
-        En: {start, end, kind: 'enum'},
-        Den: {start, end, kind: 'declare enum'},
-        Cen: {start, end, kind: 'const enum'},
-        Dcen: {start, end, kind: 'declare const enum'},
-        A: {start, end, kind: 'const'},
-        doubleF: {start, end, kind: 'function'},
-        tripleF: {start, end, kind: 'function'},
-        quadrupleF: {start, end, kind: 'async function'},
-        tripleDF: {start, end, kind: 'declare function'},
-        doubleAF: {start, end, kind: 'async function'},
-        destructuringFoo: {start, end, kind: 'destructuring const'},
-        destructuringBar: {start, end, kind: 'destructuring const'},
-        destructuringCorge: {start, end, kind: 'destructuring const'},
-        destructuringBaz: {start, end, kind: 'declare destructuring var'},
-        destructuringQux: {start, end, kind: 'destructuring let'},
-        destructuringQuux: {start, end, kind: 'destructuring let'},
+        ['garply' as Name]: {start, end, kind: 'const'},
+        ['SomeClass' as Name]: {start, end, kind: 'class'},
+        ['callback' as Name]: {start, end, kind: 'let'},
+        ['f' as Name]: {start, end, kind: 'function'},
+        ['numbersGenerator' as Name]: {start, end, kind: 'function*'},
+        ['asyncCallback' as Name]: {start, end, kind: 'async function'},
+        ['asyncGenerator' as Name]: {start, end, kind: 'async function*'},
+        ['PROTO' as Name]: {start, end, kind: 'const'},
+        ['valueOf' as Name]: {start, end, kind: 'var' as const},
+        ['toLocaleString' as Name]: {start, end, kind: 'async function' as const},
+        ['y' as Name]: {start, end, kind: 'var'},
+        ['corge' as Name]: {start, end, kind: 'declare const'},
+        ['DC' as Name]: {start, end, kind: 'declare class'},
+        ['dl' as Name]: {start, end, kind: 'declare let'},
+        ['dv' as Name]: {start, end, kind: 'declare var'},
+        ['df' as Name]: {start, end, kind: 'declare function'},
+        ['AC' as Name]: {start, end, kind: 'abstract class'},
+        ['DAC' as Name]: {start, end, kind: 'declare abstract class'},
+        ['En' as Name]: {start, end, kind: 'enum'},
+        ['Den' as Name]: {start, end, kind: 'declare enum'},
+        ['Cen' as Name]: {start, end, kind: 'const enum'},
+        ['Dcen' as Name]: {start, end, kind: 'declare const enum'},
+        ['A' as Name]: {start, end, kind: 'const'},
+        ['doubleF' as Name]: {start, end, kind: 'function'},
+        ['tripleF' as Name]: {start, end, kind: 'function'},
+        ['quadrupleF' as Name]: {start, end, kind: 'async function'},
+        ['tripleDF' as Name]: {start, end, kind: 'declare function'},
+        ['doubleAF' as Name]: {start, end, kind: 'async function'},
+        ['destructuringFoo' as Name]: {start, end, kind: 'destructuring const'},
+        ['destructuringBar' as Name]: {start, end, kind: 'destructuring const'},
+        ['destructuringCorge' as Name]: {start, end, kind: 'destructuring const'},
+        ['destructuringBaz' as Name]: {start, end, kind: 'declare destructuring var'},
+        ['destructuringQux' as Name]: {start, end, kind: 'destructuring let'},
+        ['destructuringQuux' as Name]: {start, end, kind: 'destructuring let'},
       },
 
       typeNamedExports: [
         {start, end},
-        {start, end, names: {corge: {by: 'garply'}}},
+        {start, end, names: {['corge' as Name]: {by: 'garply' as Name}}},
       ],
 
       typeExports: {
-        T: {start, end},
-        SomeType: {start, end},
-        D: {start, end, isDeclare: true},
+        ['T' as Name]: {start, end},
+        ['SomeType' as Name]: {start, end},
+        ['D' as Name]: {start, end, isDeclare: true},
       },
 
       interfaceExports: {
-        I: [
+        ['I' as Name]: [
           {start, end},
           {start, end},
         ],
-        PROTO: [{start, end}],
-        __defineSetter__: [{start, end}],
-        DI: [{start, end, isDeclare: true}],
+        ['PROTO' as Name]: [{start, end}],
+        ['__defineSetter__' as Name]: [{start, end}],
+        ['DI' as Name]: [{start, end, isDeclare: true}],
       },
 
       namespaceExports: {
-        N: [
+        ['N' as Name]: [
           {start, end},
           {start, end},
         ],
-        PROTO: [{start, end}],
-        __defineGetter__: [{start, end}],
-        DN: [{start, end, isDeclare: true}],
+        ['PROTO' as Name]: [{start, end}],
+        ['__defineGetter__' as Name]: [{start, end}],
+        ['DN' as Name]: [{start, end, isDeclare: true}],
       },
 
       commonJsNamespaceExport: {start, end},
 
       commonJsExports: {
-        foo: {start, end, startsWithModule: true},
-        bar: {start, end},
-        baz: {start, end},
-        qux: {start, end},
+        ['foo' as Name]: {start, end, startsWithModule: true},
+        ['bar' as Name]: {start, end},
+        ['baz' as Name]: {start, end},
+        ['qux' as Name]: {start, end},
       },
 
       errors: {

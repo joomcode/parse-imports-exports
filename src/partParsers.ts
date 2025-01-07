@@ -1,11 +1,6 @@
-import type {Name} from './types';
+import type {Name, Path} from './types';
 
-type Destructuring =
-  | Readonly<{
-      endIndex: number;
-      names: readonly Name[];
-    }>
-  | undefined;
+type Destructuring = Readonly<{endIndex: number; names: readonly Name[]}> | undefined;
 
 /**
  * Parses destructuring assignment.
@@ -65,7 +60,7 @@ export const parseDestructuring = (sourceStartsWithDestructuring: string): Destr
         return;
       }
 
-      names.push(sourceStartsWithDestructuring.slice(index, index + nameIndex));
+      names.push(sourceStartsWithDestructuring.slice(index, index + nameIndex) as Name);
 
       index += nameIndex - 1;
     }
@@ -80,7 +75,7 @@ export const parseDestructuring = (sourceStartsWithDestructuring: string): Destr
 export const parseFrom = (
   quoteCharacter: string,
   sourceWithString: string,
-): Readonly<{from: string; index: number}> => {
+): Readonly<{from: Path; index: number}> => {
   let hasBackslash = false;
   let index = sourceWithString.length - 1;
 
@@ -96,10 +91,10 @@ export const parseFrom = (
     }
   }
 
-  let from = sourceWithString.slice(index + 1);
+  let from = sourceWithString.slice(index + 1) as Path;
 
   if (hasBackslash) {
-    from = from.replace(backslashesRegExp, stripFirstCharacter);
+    from = from.replace(backslashesRegExp, stripFirstCharacter) as Path;
   }
 
   return {from, index};

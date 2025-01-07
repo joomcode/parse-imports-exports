@@ -7,6 +7,8 @@ import {
   parseContentInObjectValues,
 } from './utils.js';
 
+import type {Name, Path} from '../src';
+
 export const testRealworldExamples = async (): Promise<void> => {
   const typescriptDirectory = join('node_modules', 'typescript', 'lib');
 
@@ -26,7 +28,7 @@ export const testRealworldExamples = async (): Promise<void> => {
       continue;
     }
 
-    if (Array.isArray(parsedContent.requires!['fs']) === false) {
+    if (Array.isArray(parsedContent.requires!['fs' as Path]) === false) {
       assert(false, `\`${key}\` has require \`fs\``);
     }
   }
@@ -43,8 +45,9 @@ export const testRealworldExamples = async (): Promise<void> => {
   assertObjectWithParsedContentHasNoErrors(parseStatementsContent, 'parse-statements');
 
   assert(
-    parseStatementsContent['index.js']?.declarationExports?.['createParseFunction'] instanceof
-      Object,
+    parseStatementsContent['index.js']?.declarationExports?.[
+      'createParseFunction' as Name
+    ] instanceof Object,
     'correctly parses `createParseFunction` from `parse-statements`',
   );
 

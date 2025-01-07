@@ -12,11 +12,9 @@ export const addError = (
 ): void => {
   let {errors} = importsExports;
 
-  if (errors === undefined) {
-    importsExports.errors = errors = {__proto__: null} as unknown as ExcludeUndefined<
-      typeof errors
-    >;
-  }
+  errors ??= importsExports.errors = {__proto__: null} as unknown as ExcludeUndefined<
+    typeof errors
+  >;
 
   const additionalOffset = endIndex !== undefined && endIndex < startIndex + 2 ? 100 : 0;
 

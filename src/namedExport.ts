@@ -4,9 +4,11 @@ import {addError, spacesRegExp, stripComments} from './utils.js';
 import type {
   ExcludeUndefined,
   MutableImportsExports,
+  Name,
   Names,
   NamedExport,
   OnParse,
+  Path,
   TypeNamedExport,
 } from './types';
 
@@ -37,7 +39,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   {start: exportStart, end: unparsedStart, comments, match: startMatch},
   {start: unparsedEnd, end: exportEnd, match: endMatch},
 ) => {
-  let maybeFrom: string | undefined;
+  let maybeFrom: Path | undefined;
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
   const {quote} = endMatch.groups as {quote?: string};
 
@@ -80,7 +82,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   }
 
   const namesString = unparsed.trim().replace(spacesRegExp, ' ');
-  const namesList = namesString.split(',');
+  const namesList = namesString.split(',') as Name[];
 
   let names: Names | undefined;
   let types: Names | undefined;
@@ -88,13 +90,13 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   for (let name of namesList) {
     let isType = false;
 
-    name = name.trim();
+    name = name.trim() as Name;
 
     if (name === '') {
       continue;
     }
 
-    const nameObject: Names[string] = {};
+    const nameObject: Names[Name] = {};
 
     if (name.startsWith('type ')) {
       if (isTypeExport) {
@@ -110,20 +112,20 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       }
 
       isType = true;
-      name = name.slice(5);
+      name = name.slice(5) as Name;
     }
 
     const asIndex = name.indexOf(' as ');
 
     if (asIndex >= 0) {
-      nameObject.by = name.slice(0, asIndex);
+      nameObject.by = name.slice(0, asIndex) as Name;
 
-      name = name.slice(asIndex + 4);
+      name = name.slice(asIndex + 4) as Name;
     }
 
     if (isType) {
       if (types === undefined) {
-        types = {__proto__: null as unknown as object};
+        types = {__proto__: null} as Names;
       } else if (name in types) {
         return addError(
           importsExports,
@@ -139,7 +141,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       types[name] = nameObject;
     } else {
       if (names === undefined) {
-        names = {__proto__: null as unknown as object};
+        names = {__proto__: null} as Names;
       } else if (name in names) {
         return addError(
           importsExports,
@@ -168,24 +170,18 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     const key = isTypeExport ? 'typeNamedExports' : 'namedExports';
     let exports = importsExports[key];
 
-    if (exports === undefined) {
-      exports = importsExports[key] = [];
-    }
+    exports ??= importsExports[key] = [];
 
     (exports as NamedExport[]).push(namedExport);
   } else {
     const key = isTypeExport ? 'typeNamedReexports' : 'namedReexports';
     let reexports = importsExports[key];
 
-    if (reexports === undefined) {
-      importsExports[key] = reexports = {__proto__: null} as ExcludeUndefined<typeof reexports>;
-    }
+    reexports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof reexports>;
 
     let reexportsList = reexports[maybeFrom];
 
-    if (reexportsList === undefined) {
-      reexports[maybeFrom] = reexportsList = [];
-    }
+    reexportsList ??= reexports[maybeFrom] = [];
 
     (reexportsList as object[]).push(namedExport);
   }

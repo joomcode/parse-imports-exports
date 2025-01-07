@@ -1,7 +1,7 @@
 import {parseIdentifier} from './partParsers.js';
 import {addError, stripComments} from './utils.js';
 
-import type {ExcludeUndefined, MutableImportsExports, OnParse} from './types';
+import type {ExcludeUndefined, MutableImportsExports, Name, OnParse} from './types';
 
 /**
  * Adds error of parsing `module.exports = ...`/`(module.)exports.foo = ...` statement.
@@ -48,7 +48,7 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
       );
     }
 
-    const name = unparsed.slice(0, nameIndex);
+    const name = unparsed.slice(0, nameIndex) as Name;
 
     let {commonJsExports} = importsExports;
 

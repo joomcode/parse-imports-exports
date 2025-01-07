@@ -8,6 +8,8 @@ import {
   start,
 } from './utils.js';
 
+import type {Name, Path} from '../src';
+
 export const testBasic = (): void => {
   assert(typeof parseImportsExports('') === 'object', 'returns an object for empty source');
 
@@ -78,7 +80,7 @@ export default 2;
   );
 
   assert(
-    Array.isArray(withoutRequire.dynamicImports?.['bar']) &&
+    Array.isArray(withoutRequire.dynamicImports?.['bar' as Path]) &&
       withoutRequire.errors === undefined &&
       withoutCommonJsExports.defaultExport !== undefined &&
       withoutCommonJsExports.errors === undefined,
@@ -98,8 +100,8 @@ exports.baz = 12
 
   assert(
     withCommonJs.errors === undefined &&
-      withCommonJs.commonJsExports?.['foo']?.start! > 0 &&
-      withCommonJs.commonJsExports?.['baz']?.start! > 0,
+      withCommonJs.commonJsExports?.['foo' as Name]?.start! > 0 &&
+      withCommonJs.commonJsExports?.['baz' as Name]?.start! > 0,
     'respects transpiler-generated CommonJS scripts',
   );
 
@@ -124,7 +126,8 @@ const foo = require( /* some 'comment' */ 'bar'/* also "comment" */);
 `);
 
   assert(
-    requireWithComments.errors === undefined && requireWithComments.requires?.['bar'] !== undefined,
+    requireWithComments.errors === undefined &&
+      requireWithComments.requires?.['bar' as Path] !== undefined,
     'parses "require" with comments inside',
   );
 
@@ -134,7 +137,7 @@ const foo = import( 'bar' /* 'comment" */)
 
   assert(
     importWithComments.errors === undefined &&
-      importWithComments.dynamicImports?.['bar'] !== undefined,
+      importWithComments.dynamicImports?.['bar' as Path] !== undefined,
     'parses "import(...)" with comments inside',
   );
 
@@ -145,7 +148,7 @@ type Foo = typeof import(/* some
 
   assert(
     typeImportWithComments.errors === undefined &&
-      typeImportWithComments.typeDynamicImports?.['baz'] !== undefined,
+      typeImportWithComments.typeDynamicImports?.['baz' as Path] !== undefined,
     'parses "typeof import" with comments inside',
   );
 
@@ -159,7 +162,7 @@ const foo = import( /* 'comment"
   assert(
     importWithError.errors?.[Number(errorKey)]?.split(':')[0] ===
       "Cannot find start of path string literal of dynamic `import('...')`" &&
-      importWithComments.dynamicImports?.['qux'] === undefined,
+      importWithComments.dynamicImports?.['qux' as Path] === undefined,
     'find error in "import(...)" with comments inside',
   );
 

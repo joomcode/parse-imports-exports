@@ -106,7 +106,7 @@ export type MutableImportsExports = {
   /**
    * `export {...} from ...`.
    */
-  namedReexports: Record<Name, readonly NamedReexport[]> | undefined;
+  namedReexports: Record<Path, readonly NamedReexport[]> | undefined;
 
   /**
    * `export * as ... from ...`.
@@ -191,7 +191,7 @@ export type MutableImportsExports = {
 /**
  * Imported or exported name (identifier).
  */
-export type Name = string;
+export type Name = Brand<string, 'Name'>;
 
 /**
  * Parsed JSON presentation of `export {...}` statement.
@@ -256,6 +256,11 @@ export type Options = Readonly<{
 export type {ParseOptions};
 
 /**
+ * Path to a module or package after the `from` keyword.
+ */
+export type Path = Brand<string, 'Path'>;
+
+/**
  * Parsed JSON presentation of `require(...)` statement.
  */
 export type Require = Position;
@@ -279,6 +284,16 @@ export type TypeNamedExport = Position & {names?: Names};
  * Parsed JSON presentation of `(module.)exports.foo = ...` statement.
  */
 type CommonJsExport = Position & {startsWithModule?: true};
+
+/**
+ * Inner key for brand types.
+ */
+declare const BRAND: unique symbol;
+
+/**
+ * Creates brand (nominal) type from regular type.
+ */
+type Brand<Type, Key extends string> = Type & {readonly [BRAND]: Key};
 
 /**
  * Parsed JSON presentation of `module.exports = ...` statement.
@@ -315,11 +330,6 @@ type NamedReexport = Position & {names?: Names; types?: Names};
  * Parsed JSON presentation of `export namespace ...` statement.
  */
 type NamespaceExport = Position & {isDeclare?: true};
-
-/**
- * Path to a module or package after the `from` keyword.
- */
-type Path = string;
 
 /**
  * Position of import, export or reexport statement in source file.
