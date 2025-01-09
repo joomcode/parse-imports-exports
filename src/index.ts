@@ -1,6 +1,11 @@
 import {onGlobalError} from './onErrors.js';
 import {comments, getStatements} from './statements.js';
-import {createParseFunction, getCacheKey, removeErrorsCausedByOverloading} from './utils.js';
+import {
+  CONTEXT_KEY,
+  createParseFunction,
+  getCacheKey,
+  removeErrorsCausedByOverloading,
+} from './utils.js';
 
 import type {ImportsExports, MutableImportsExports, Options, Parse, ParseOptions} from './types';
 
@@ -33,6 +38,7 @@ export const parseImportsExports = (source: string, options?: Options): ImportsE
     commonJsNamespaceExport: undefined,
     commonJsExports: undefined,
     errors: undefined,
+    [CONTEXT_KEY]: {lineColumnCache: undefined, linesIndexes: undefined, source},
   };
 
   let parse = parseCache[cacheKey];
@@ -49,12 +55,14 @@ export const parseImportsExports = (source: string, options?: Options): ImportsE
 
   removeErrorsCausedByOverloading(importsExports);
 
+  (importsExports as {[CONTEXT_KEY]: unknown})[CONTEXT_KEY] = undefined;
+
   return importsExports;
 };
 
 export type {ImportsExports, Options};
 
-export type {Kind, Name, Path} from './types';
+export type {Kind, LineColumn, Name, Path} from './types';
 
 /**
  * Base options of parse function.

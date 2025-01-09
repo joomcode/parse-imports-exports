@@ -8,9 +8,9 @@ import type {DynamicImport, ExcludeUndefined, MutableImportsExports, OnParse} fr
  */
 export const onDynamicImportError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
-) => addError(importsExports, 'Cannot find end of `import(...)` statement', source, start, end);
+) => addError(importsExports, 'Cannot find end of `import(...)` statement', start, end);
 
 /**
  * Parses `import('...')`/`import("...")` statement.
@@ -30,7 +30,6 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       `Cannot find end of path string literal of dynamic \`import(...)\`${isTypeImport ? ' of type' : ''}`,
-      source,
       importStart,
       importEnd,
     );
@@ -42,7 +41,6 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       `Cannot find start of path string literal of dynamic \`import(${quoteCharacter}...${quoteCharacter})\`${isTypeImport ? ' of type' : ''}`,
-      source,
       importStart,
       importEnd,
     );

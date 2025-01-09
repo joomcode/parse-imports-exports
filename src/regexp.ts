@@ -7,9 +7,9 @@ import type {MutableImportsExports, OnParse} from './types';
  */
 export const onRegexpError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
-) => addError(importsExports, 'Cannot find end of regexp literal', source, start, end);
+) => addError(importsExports, 'Cannot find end of regexp literal', start, end);
 
 /**
  * Parses `/.../` statement (regular expression literal).

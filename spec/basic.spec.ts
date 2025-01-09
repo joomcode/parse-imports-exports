@@ -8,7 +8,9 @@ import {
   start,
 } from './utils.js';
 
-import type {Name, Path} from '../src';
+import type {LineColumn, Name, Path} from '../src';
+
+const firstChar = '1:1' as LineColumn;
 
 export const testBasic = (): void => {
   assert(typeof parseImportsExports('') === 'object', 'returns an object for empty source');
@@ -23,7 +25,7 @@ export const testBasic = (): void => {
   assert(
     getNumberOfKeysWithDefinedValues(withImportError) === 1 &&
       Object.keys(withImportError.errors!).length === 1 &&
-      withImportError.errors![0]!.startsWith('Cannot find end of `import` statement:'),
+      withImportError.errors![firstChar]!.startsWith('Cannot find end of `import` statement:'),
     'returns correct error of parsing import statement',
   );
 
@@ -32,7 +34,7 @@ export const testBasic = (): void => {
   assert(
     getNumberOfKeysWithDefinedValues(withExportError) === 1 &&
       Object.keys(withExportError.errors!).length === 1 &&
-      withExportError.errors![0]!.startsWith(
+      withExportError.errors![firstChar]!.startsWith(
         'Cannot find end of `export type {...} ...` statement:',
       ),
     'returns correct error of parsing named export statement',
@@ -157,10 +159,10 @@ const foo = import( /* 'comment"
  */"qux' /* 'comment" */);
 `);
 
-  const errorKey = Object.keys(importWithError.errors ?? {})[0];
+  const errorKey = Object.keys(importWithError.errors ?? {})[0] as LineColumn;
 
   assert(
-    importWithError.errors?.[Number(errorKey)]?.split(':')[0] ===
+    importWithError.errors?.[errorKey]?.split(':')[0] ===
       "Cannot find start of path string literal of dynamic `import('...')`" &&
       importWithComments.dynamicImports?.['qux' as Path] === undefined,
     'find error in "import(...)" with comments inside',

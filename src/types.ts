@@ -12,6 +12,20 @@ export type {CommentPair, OnCommentError, OnGlobalError, OnParse, Parse} from 'p
 export type Comment = BaseComment<MutableImportsExports>;
 
 /**
+ * Internal context in `MutableImportsExports`.
+ */
+export type Context = {
+  lineColumnCache: Record<number, LineColumn> | undefined;
+  linesIndexes: readonly number[] | undefined;
+  readonly source: string;
+};
+
+/**
+ * Type of `Context` key.
+ */
+export type ContextKey = typeof CONTEXT_KEY;
+
+/**
  * Parsed JSON presentation of `import(...)` statement.
  */
 export type DynamicImport = Position;
@@ -24,7 +38,7 @@ export type ExcludeUndefined<Type> = Exclude<Type, undefined>;
 /**
  * Parsed JSON presentation of imports, exports and reexports of ECMAScript/TypeScript module.
  */
-export type ImportsExports = DeepReadonly<MutableImportsExports>;
+export type ImportsExports = DeepReadonly<MutableImportsExportsWithoutContext>;
 
 /**
  * Kind of exported declaration.
@@ -57,9 +71,158 @@ export type Kind =
   | 'var';
 
 /**
+ * String with position of symbol in source, like `3:12` -- line 3, column 12.
+ */
+export type LineColumn = Brand<string, 'LineColumn'>;
+
+/**
+ * Internal presentation of imports, exports and reexports of module.
+ */
+export type MutableImportsExports = MutableImportsExportsWithoutContext &
+  Readonly<{[CONTEXT_KEY]: Context}>;
+
+/**
+ * Imported or exported name (identifier).
+ */
+export type Name = Brand<string, 'Name'>;
+
+/**
+ * Parsed JSON presentation of `export {...}` statement.
+ */
+export type NamedExport = Position & {names?: Names; types?: Names};
+
+/**
+ * Parsed JSON presentation of `import {...} from ...` statement.
+ */
+export type NamedImport = Position & {default?: Name; names?: Names; types?: Names};
+
+/**
+ * Parsed JSON presentation of names in `import`/`export` statements.
+ */
+export type Names = Record<Name, {by?: Name}>;
+
+/**
+ * Parsed JSON presentation of `import * as ...` statement.
+ */
+export type NamespaceImport = Position & {default?: Name; namespace: Name};
+
+/**
+ * Parsed JSON presentation of `export * as ... from ...` statement.
+ */
+export type NamespaceReexport = Position & {namespace: Name};
+
+/**
+ * Options of `parseImportsExports` function.
+ */
+export type Options = Readonly<{
+  /**
+   * If `true`, then we ignore `module.exports = ...`/`(module.)exports.foo = ...` expressions
+   * during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `module.exports = ...`/`(module.)exports.foo = ...`
+   * expressions are parsed.
+   */
+  ignoreCommonJsExports?: boolean;
+  /**
+   * If `true`, then we ignore `import(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `import(...)` expressions are parsed.
+   */
+  ignoreDynamicImports?: boolean;
+  /**
+   * If `true`, then we ignore regular expression literals (`/.../`)
+   * during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), regular expression literals are parsed.
+   */
+  ignoreRegexpLiterals?: boolean;
+  /**
+   * If `true`, then we ignore `require(...)` expressions during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), `require(...)` expressions are parsed.
+   */
+  ignoreRequires?: boolean;
+  /**
+   * If `true`, then we ignore string literals during parsing (maybe a little faster).
+   * By default (if `false` or skipped option), string literals are parsed, that is,
+   * the text inside them cannot be interpreted as another expression.
+   */
+  ignoreStringLiterals?: boolean;
+}>;
+
+export type {ParseOptions};
+
+/**
+ * Path to a module or package after the `from` keyword.
+ */
+export type Path = Brand<string, 'Path'>;
+
+/**
+ * Parsed JSON presentation of `require(...)` statement.
+ */
+export type Require = Position;
+
+/**
+ * Parsed JSON presentation of `export * from ...` statement.
+ */
+export type StarReexport = Position;
+
+/**
+ * Type of statement for parse options.
+ */
+export type Statement = BaseStatement<MutableImportsExports>;
+
+/**
+ * Parsed JSON presentation of `export type {...}` statement.
+ */
+export type TypeNamedExport = Position & {names?: Names};
+
+/**
+ * Parsed JSON presentation of `(module.)exports.foo = ...` statement.
+ */
+type CommonJsExport = Position & {startsWithModule?: true};
+
+/**
+ * Inner key for brand types.
+ */
+declare const BRAND: unique symbol;
+
+/**
+ * Creates brand (nominal) type from regular type.
+ */
+type Brand<Type, Key extends string> = Type & {readonly [BRAND]: Key};
+
+/**
+ * Parsed JSON presentation of `module.exports = ...` statement.
+ */
+type CommonJsNamespaceExport = Position;
+
+/**
+ * Symbol for generation type of `Context` key.
+ */
+declare const CONTEXT_KEY: unique symbol;
+
+/**
+ * Parsed JSON presentation of `export (class|const|function|var...) ...` statement.
+ */
+type DeclarationExport = Position & {kind: Kind};
+
+/**
+ * Parsed JSON presentation of `export default ...` statement.
+ */
+type DefaultExport = Position;
+
+/**
+ * Readonly type with recursive applying.
+ * `DeepReadonly<{foo: {bar: 0}}>` = `{readonly foo: {readonly bar: 0}}`.
+ */
+type DeepReadonly<Type> = {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>};
+
+/**
+ * Parsed JSON presentation of `export interface ...` statement.
+ */
+type InterfaceExport = Position & {isDeclare?: true};
+
+/**
  * Mutable parsed JSON presentation of imports, exports and reexports of module.
  */
-export type MutableImportsExports = {
+type MutableImportsExportsWithoutContext = {
   /**
    * Imports.
    */
@@ -185,141 +348,8 @@ export type MutableImportsExports = {
   /**
    * Syntax errors of module.
    */
-  errors: Record<number, string> | undefined;
+  errors: Record<LineColumn, string> | undefined;
 };
-
-/**
- * Imported or exported name (identifier).
- */
-export type Name = Brand<string, 'Name'>;
-
-/**
- * Parsed JSON presentation of `export {...}` statement.
- */
-export type NamedExport = Position & {names?: Names; types?: Names};
-
-/**
- * Parsed JSON presentation of `import {...} from ...` statement.
- */
-export type NamedImport = Position & {default?: Name; names?: Names; types?: Names};
-
-/**
- * Parsed JSON presentation of names in `import`/`export` statements.
- */
-export type Names = Record<Name, {by?: Name}>;
-
-/**
- * Parsed JSON presentation of `import * as ...` statement.
- */
-export type NamespaceImport = Position & {default?: Name; namespace: Name};
-
-/**
- * Parsed JSON presentation of `export * as ... from ...` statement.
- */
-export type NamespaceReexport = Position & {namespace: Name};
-
-/**
- * Options of `parseImportsExports` function.
- */
-export type Options = Readonly<{
-  /**
-   * If `true`, then we ignore `module.exports = ...`/`(module.)exports.foo = ...` expressions
-   * during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), `module.exports = ...`/`(module.)exports.foo = ...`
-   * expressions are parsed.
-   */
-  ignoreCommonJsExports?: boolean;
-  /**
-   * If `true`, then we ignore `import(...)` expressions during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), `import(...)` expressions are parsed.
-   */
-  ignoreDynamicImports?: boolean;
-  /**
-   * If `true`, then we ignore regular expression literals (`/.../`)
-   * during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), regular expression literals are parsed.
-   */
-  ignoreRegexpLiterals?: boolean;
-  /**
-   * If `true`, then we ignore `require(...)` expressions during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), `require(...)` expressions are parsed.
-   */
-  ignoreRequires?: boolean;
-  /**
-   * If `true`, then we ignore string literals during parsing (maybe a little faster).
-   * By default (if `false` or skipped option), string literals are parsed, that is,
-   * the text inside them cannot be interpreted as another expression.
-   */
-  ignoreStringLiterals?: boolean;
-}>;
-
-export type {ParseOptions};
-
-/**
- * Path to a module or package after the `from` keyword.
- */
-export type Path = Brand<string, 'Path'>;
-
-/**
- * Parsed JSON presentation of `require(...)` statement.
- */
-export type Require = Position;
-
-/**
- * Parsed JSON presentation of `export * from ...` statement.
- */
-export type StarReexport = Position;
-
-/**
- * Type of statement for parse options.
- */
-export type Statement = BaseStatement<MutableImportsExports>;
-
-/**
- * Parsed JSON presentation of `export type {...}` statement.
- */
-export type TypeNamedExport = Position & {names?: Names};
-
-/**
- * Parsed JSON presentation of `(module.)exports.foo = ...` statement.
- */
-type CommonJsExport = Position & {startsWithModule?: true};
-
-/**
- * Inner key for brand types.
- */
-declare const BRAND: unique symbol;
-
-/**
- * Creates brand (nominal) type from regular type.
- */
-type Brand<Type, Key extends string> = Type & {readonly [BRAND]: Key};
-
-/**
- * Parsed JSON presentation of `module.exports = ...` statement.
- */
-type CommonJsNamespaceExport = Position;
-
-/**
- * Parsed JSON presentation of `export (class|const|function|var...) ...` statement.
- */
-type DeclarationExport = Position & {kind: Kind};
-
-/**
- * Parsed JSON presentation of `export default ...` statement.
- */
-type DefaultExport = Position;
-
-/**
- * Readonly type with recursive applying.
- * `DeepReadonly<{foo: {bar: 0}}>` = `{readonly foo: {readonly bar: 0}}`.
- */
-type DeepReadonly<Type> = {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>};
-
-/**
- * Parsed JSON presentation of `export interface ...` statement.
- */
-type InterfaceExport = Position & {isDeclare?: true};
 
 /**
  * Parsed JSON presentation of `export {...} from ...` statement.

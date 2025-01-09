@@ -16,9 +16,9 @@ import type {
  */
 export const onImportError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
-) => addError(importsExports, 'Cannot find end of `import` statement', source, start, end);
+) => addError(importsExports, 'Cannot find end of `import` statement', start, end);
 
 /**
  * Parses `import` statement.
@@ -38,7 +38,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       'Cannot find start of `from` string literal of import',
-      source,
       importStart,
       importEnd,
     );
@@ -76,7 +75,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot find end of imports list (\`}\`) for import from \`${from}\``,
-          source,
           importStart,
           importEnd,
         );
@@ -107,7 +105,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
               `Cannot use \`type\` modifier in \`import type\` statement for type \`${name.slice(
                 5,
               )}\` for import from \`${from}\``,
-              source,
               importStart,
               importEnd,
             );
@@ -132,7 +129,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return addError(
               importsExports,
               `Duplicate imported type \`${name}\` for import from \`${from}\``,
-              source,
               importStart,
               importEnd,
             );
@@ -146,7 +142,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return addError(
               importsExports,
               `Duplicate imported name \`${name}\` for import from \`${from}\``,
-              source,
               importStart,
               importEnd,
             );
@@ -186,7 +181,6 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
         `Cannot use default \`${unparsed}\` and namespace \`${
           (parsedImport as NamespaceImport).namespace
         }\` together in \`import type\` statement for import from \`${from}\``,
-        source,
         importStart,
         importEnd,
       );

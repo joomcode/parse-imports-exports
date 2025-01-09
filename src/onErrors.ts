@@ -7,13 +7,12 @@ import type {MutableImportsExports, OnCommentError, OnGlobalError, OnParse} from
  */
 export const onDoubleQuoteError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
 ) =>
   addError(
     importsExports,
     'Cannot find end of string literal started with double quote',
-    source,
     start,
     end,
   );
@@ -23,41 +22,40 @@ export const onDoubleQuoteError: OnParse<MutableImportsExports, 1> = (
  */
 export const onGlobalError: OnGlobalError<MutableImportsExports> = (
   importsExports,
-  source,
+  _source,
   message,
   index,
-) => addError(importsExports, message, source, index);
+) => addError(importsExports, message, index);
 
 /**
  * Adds error of parsing multiline comment.
  */
 export const onMultilineCommentError: OnCommentError<MutableImportsExports> = (
   importsExports,
-  source,
+  _source,
   {start},
-) => addError(importsExports, 'Cannot find end of multiline comment', source, start);
+) => addError(importsExports, 'Cannot find end of multiline comment', start);
 
 /**
  * Adds error of parsing single line comment.
  */
 export const onSinglelineCommentError: OnCommentError<MutableImportsExports> = (
   importsExports,
-  source,
+  _source,
   {start},
-) => addError(importsExports, 'Cannot find end of single line comment', source, start);
+) => addError(importsExports, 'Cannot find end of single line comment', start);
 
 /**
  * Adds error of parsing string literal started with single quote.
  */
 export const onSingleQuoteError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
 ) =>
   addError(
     importsExports,
     'Cannot find end of string literal started with single quote',
-    source,
     start,
     end,
   );

@@ -8,9 +8,9 @@ import type {ExcludeUndefined, MutableImportsExports, OnParse, Require} from './
  */
 export const onRequireError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
-) => addError(importsExports, 'Cannot find end of `require(...)` statement', source, start, end);
+) => addError(importsExports, 'Cannot find end of `require(...)` statement', start, end);
 
 /**
  * Parses `require('...')`/`require("...")` statement.
@@ -29,7 +29,6 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       'Cannot find end of path string literal in `require(...)`',
-      source,
       requireStart,
       requireEnd,
     );
@@ -41,7 +40,6 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       `Cannot find start of path string literal in \`require(${quoteCharacter}...${quoteCharacter})\``,
-      source,
       requireStart,
       requireEnd,
     );

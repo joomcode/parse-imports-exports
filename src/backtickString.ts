@@ -7,16 +7,10 @@ import type {MutableImportsExports, OnParse} from './types';
  */
 export const onBacktickError: OnParse<MutableImportsExports, 1> = (
   importsExports,
-  source,
+  _source,
   {start, end},
 ) =>
-  addError(
-    importsExports,
-    'Cannot find end of string literal started with backtick',
-    source,
-    start,
-    end,
-  );
+  addError(importsExports, 'Cannot find end of string literal started with backtick', start, end);
 
 /**
  * Parses string literal started with backtick.
@@ -49,7 +43,6 @@ export const onBacktickParse: OnParse<MutableImportsExports, 2> = (
   return addError(
     importsExports,
     'Cannot find end of nested string literal started with backtick',
-    source,
     parsedToken.start,
     source.length,
   );

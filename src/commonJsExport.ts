@@ -16,7 +16,6 @@ export const onCommonJsExportError: OnParse<MutableImportsExports, 1> = (
     `Cannot find end (equal sign) of \`${token[0] === 'm' ? 'module.' : ''}exports${
       source[end] === '.' ? '.' : ''
     }... = ...\` statement`,
-    source,
     start,
     end,
   );
@@ -42,7 +41,6 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot parse identifier of \`${token}.... = ...\` statement`,
-        source,
         exportStart,
         exportEnd,
       );
@@ -71,7 +69,6 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Duplicate exported name \`${name}\` in \`${token}.... = ...\` statement`,
-          source,
           exportStart,
           exportEnd,
         );
@@ -89,7 +86,6 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       `\`${token} = ...\` is not valid CommonJS namespace export (use \`module.exports = ...\` instead)`,
-      source,
       exportStart,
       exportEnd,
     );
@@ -99,7 +95,6 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       `Duplicate CommonJS namespace export (\`${token} = ...\`)`,
-      source,
       exportStart,
       exportEnd,
     );
