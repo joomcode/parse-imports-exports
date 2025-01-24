@@ -66,14 +66,17 @@ for (const path of paths) {
         const exported: string = names
           .replace(' as default', ': __default')
           .replaceAll(' as ', ': ');
-        const exportedNames = exported.split(',').map((name) => {
-          name = name.includes(':') ? name.split(':')[1]! : name;
-          name = name.trim();
+        const exportedNames = exported
+          .split(',')
+          .map((name) => {
+            name = name.includes(':') ? name.split(':')[1]! : name;
+            name = name.trim();
 
-          allExportedNames.push(name === '__default' ? 'default' : name);
+            allExportedNames.push(name === '__default' ? 'default' : name);
 
-          return name === '__default' ? 'default: __default' : name;
-        });
+            return name === '__default' ? 'default: __default' : name;
+          })
+          .filter(Boolean);
 
         const path = replaceExtension(modulePath);
         const requiring = `const {${exported}} = require(${path});`;
@@ -95,7 +98,10 @@ for (const path of paths) {
       return 'exports.default = ';
     });
 
-    const reexports = allExportedNames.map((name) => `exports.${name} = undefined;`).join('\n');
+    const reexports = allExportedNames
+      .filter(Boolean)
+      .map((name) => `exports.${name} = undefined;`)
+      .join('\n');
 
     fileContent = `'use strict';\n${reexports}\n${fileContent}`;
 

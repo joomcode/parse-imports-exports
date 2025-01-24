@@ -1,5 +1,5 @@
 import {parseFrom} from './partParsers.js';
-import {addError} from './utils.js';
+import {addError, getPosition} from './utils.js';
 
 import type {DynamicImport, ExcludeUndefined, MutableImportsExports, OnParse} from './types';
 
@@ -18,20 +18,20 @@ export const onDynamicImportError: OnParse<MutableImportsExports, 1> = (
 export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
   importsExports,
   source,
-  {start: importStart},
+  {start},
   {start: unparsedStart},
-  {start: unparsedEnd, end: importEnd, token: endToken},
+  {start: unparsedEnd, end, token: endToken},
 ) => {
   const unparsed = source.slice(unparsedStart, unparsedEnd);
-  const isTypeImport = source.slice(importStart - 7, importStart) === 'typeof ';
+  const isTypeImport = source.slice(start - 7, start) === 'typeof ';
   const quoteCharacter = endToken[0];
 
   if (quoteCharacter === undefined) {
     return addError(
       importsExports,
       `Cannot find end of path string literal of dynamic \`import(...)\`${isTypeImport ? ' of type' : ''}`,
-      importStart,
-      importEnd,
+      start,
+      end,
     );
   }
 
@@ -41,12 +41,12 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       `Cannot find start of path string literal of dynamic \`import(${quoteCharacter}...${quoteCharacter})\`${isTypeImport ? ' of type' : ''}`,
-      importStart,
-      importEnd,
+      start,
+      end,
     );
   }
 
-  const parsedImport: DynamicImport = {start: importStart, end: importEnd};
+  const parsedImport: DynamicImport = getPosition(importsExports, start, end);
 
   let key: 'dynamicImports' | 'typeDynamicImports' = 'dynamicImports';
 

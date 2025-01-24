@@ -38,7 +38,7 @@ export const parseImportsExports = (source: string, options?: Options): ImportsE
     commonJsNamespaceExport: undefined,
     commonJsExports: undefined,
     errors: undefined,
-    [CONTEXT_KEY]: {lineColumnCache: undefined, linesIndexes: undefined, source},
+    [CONTEXT_KEY]: {lineColumnCache: undefined, linesIndexes: undefined, options, source},
   };
 
   let parse = parseCache[cacheKey];

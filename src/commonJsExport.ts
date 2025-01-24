@@ -1,5 +1,5 @@
 import {parseIdentifier} from './partParsers.js';
-import {addError, stripComments} from './utils.js';
+import {addError, getPosition, stripComments} from './utils.js';
 
 import type {ExcludeUndefined, MutableImportsExports, Name, OnParse} from './types';
 
@@ -26,8 +26,8 @@ export const onCommonJsExportError: OnParse<MutableImportsExports, 1> = (
 export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
-  {start: exportStart, end: unparsedStart, comments, token},
-  {start: unparsedEnd, end: exportEnd},
+  {start, end: unparsedStart, comments, token},
+  {start: unparsedEnd, end},
 ) => {
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
   const startsWithModule = token[0] === 'm';
@@ -41,8 +41,8 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot parse identifier of \`${token}.... = ...\` statement`,
-        exportStart,
-        exportEnd,
+        start,
+        end,
       );
     }
 
@@ -69,15 +69,15 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Duplicate exported name \`${name}\` in \`${token}.... = ...\` statement`,
-          exportStart,
-          exportEnd,
+          start,
+          end,
         );
       }
     }
 
-    commonJsExports[name] = startsWithModule
-      ? {start: exportStart, end: exportEnd, startsWithModule}
-      : {start: exportStart, end: exportEnd};
+    const position = getPosition(importsExports, start, end);
+
+    commonJsExports[name] = startsWithModule ? {...position, startsWithModule} : position;
 
     return;
   }
@@ -86,8 +86,8 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       `\`${token} = ...\` is not valid CommonJS namespace export (use \`module.exports = ...\` instead)`,
-      exportStart,
-      exportEnd,
+      start,
+      end,
     );
   }
 
@@ -95,10 +95,10 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       `Duplicate CommonJS namespace export (\`${token} = ...\`)`,
-      exportStart,
-      exportEnd,
+      start,
+      end,
     );
   }
 
-  importsExports.commonJsNamespaceExport = {start: exportStart, end: exportEnd};
+  importsExports.commonJsNamespaceExport = getPosition(importsExports, start, end);
 };

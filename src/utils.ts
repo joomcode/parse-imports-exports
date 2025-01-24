@@ -5,6 +5,7 @@ import type {
   LineColumn,
   MutableImportsExports,
   Options,
+  Position,
 } from './types';
 
 /**
@@ -13,8 +14,8 @@ import type {
 export const addError = (
   importsExports: MutableImportsExports,
   message: string,
-  startIndex: number,
-  endIndex?: number,
+  start: number,
+  end?: number,
 ): void => {
   const {source} = importsExports[CONTEXT_KEY];
   let {errors} = importsExports;
@@ -23,17 +24,14 @@ export const addError = (
     typeof errors
   >;
 
-  const additionalOffset = endIndex !== undefined && endIndex < startIndex + 2 ? 100 : 0;
+  const additionalOffset = end !== undefined && end < start + 2 ? 100 : 0;
 
   const fullMessage =
-    endIndex === undefined
+    end === undefined
       ? message
-      : `${message}:\n${source.slice(
-          startIndex,
-          Math.min(endIndex + additionalOffset, startIndex + 200),
-        )}`;
+      : `${message}:\n${source.slice(start, Math.min(end + additionalOffset, start + 200))}`;
 
-  const lineColumn = getLineColumnByIndex(startIndex, importsExports);
+  const lineColumn = getLineColumnByIndex(importsExports, start);
   const currentError = errors[lineColumn];
 
   errors[lineColumn] = currentError === undefined ? fullMessage : `${currentError}\n${fullMessage}`;
@@ -80,6 +78,23 @@ export const getCacheKey = (options: Options | undefined): string => {
 
   return cacheKey;
 };
+
+/**
+ * Get position object by start and end indexes.
+ */
+export const getPosition = (
+  importsExports: MutableImportsExports,
+  start: number,
+  end: number,
+): Position =>
+  importsExports[CONTEXT_KEY].options?.includeLineColumn
+    ? {
+        start,
+        startLineColumn: getLineColumnByIndex(importsExports, start),
+        end,
+        endLineColumn: getLineColumnByIndex(importsExports, end),
+      }
+    : {start, end};
 
 /**
  * Removes errors, caused by function overloading.
@@ -153,8 +168,8 @@ export const stripComments = (
  * Get `LineColumn` string by index in source.
  */
 const getLineColumnByIndex = (
-  index: number,
   {[CONTEXT_KEY]: context}: MutableImportsExports,
+  index: number,
 ): LineColumn => {
   let {lineColumnCache, linesIndexes} = context;
 

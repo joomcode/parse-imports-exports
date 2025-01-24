@@ -17,6 +17,7 @@ export type Comment = BaseComment<MutableImportsExports>;
 export type Context = {
   lineColumnCache: Record<number, LineColumn> | undefined;
   linesIndexes: readonly number[] | undefined;
+  readonly options: Options | undefined;
   readonly source: string;
 };
 
@@ -122,28 +123,40 @@ export type Options = Readonly<{
    * expressions are parsed.
    */
   ignoreCommonJsExports?: boolean;
+
   /**
    * If `true`, then we ignore `import(...)` expressions during parsing (maybe a little faster).
    * By default (if `false` or skipped option), `import(...)` expressions are parsed.
    */
   ignoreDynamicImports?: boolean;
+
   /**
    * If `true`, then we ignore regular expression literals (`/.../`)
    * during parsing (maybe a little faster).
    * By default (if `false` or skipped option), regular expression literals are parsed.
    */
   ignoreRegexpLiterals?: boolean;
+
   /**
    * If `true`, then we ignore `require(...)` expressions during parsing (maybe a little faster).
    * By default (if `false` or skipped option), `require(...)` expressions are parsed.
    */
   ignoreRequires?: boolean;
+
   /**
    * If `true`, then we ignore string literals during parsing (maybe a little faster).
    * By default (if `false` or skipped option), string literals are parsed, that is,
    * the text inside them cannot be interpreted as another expression.
    */
   ignoreStringLiterals?: boolean;
+
+  /**
+   * If `true`, then we include the token's start line-column and the token's end line-column
+   * in the token's position in source file.
+   * By default (if `false` or skipped option), the position includes only
+   * the token's start index and the token end index.
+   */
+  includeLineColumn?: boolean;
 }>;
 
 export type {ParseOptions};
@@ -152,6 +165,16 @@ export type {ParseOptions};
  * Path to a module or package after the `from` keyword.
  */
 export type Path = Brand<string, 'Path'>;
+
+/**
+ * Position of import, export or reexport statement in source file.
+ */
+export type Position = {
+  start: number;
+  startLineColumn?: LineColumn;
+  end: number;
+  endLineColumn?: LineColumn;
+};
 
 /**
  * Parsed JSON presentation of `require(...)` statement.
@@ -360,11 +383,6 @@ type NamedReexport = Position & {names?: Names; types?: Names};
  * Parsed JSON presentation of `export namespace ...` statement.
  */
 type NamespaceExport = Position & {isDeclare?: true};
-
-/**
- * Position of import, export or reexport statement in source file.
- */
-type Position = {start: number; end: number};
 
 /**
  * Parsed JSON presentation of `export type ...` statement.

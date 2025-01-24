@@ -1,5 +1,5 @@
 import {parseFrom} from './partParsers.js';
-import {addError} from './utils.js';
+import {addError, getPosition} from './utils.js';
 
 import type {ExcludeUndefined, MutableImportsExports, OnParse, Require} from './types';
 
@@ -18,9 +18,9 @@ export const onRequireError: OnParse<MutableImportsExports, 1> = (
 export const onRequireParse: OnParse<MutableImportsExports, 3> = (
   importsExports,
   source,
-  {start: requireStart},
+  {start},
   {start: unparsedStart},
-  {start: unparsedEnd, end: requireEnd, token: endToken},
+  {start: unparsedEnd, end, token: endToken},
 ) => {
   const unparsed = source.slice(unparsedStart, unparsedEnd);
   const quoteCharacter = endToken[0];
@@ -29,8 +29,8 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       'Cannot find end of path string literal in `require(...)`',
-      requireStart,
-      requireEnd,
+      start,
+      end,
     );
   }
 
@@ -40,12 +40,12 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
     return addError(
       importsExports,
       `Cannot find start of path string literal in \`require(${quoteCharacter}...${quoteCharacter})\``,
-      requireStart,
-      requireEnd,
+      start,
+      end,
     );
   }
 
-  const parsedRequire: Require = {start: requireStart, end: requireEnd};
+  const parsedRequire: Require = getPosition(importsExports, start, end);
 
   let {requires} = importsExports;
 

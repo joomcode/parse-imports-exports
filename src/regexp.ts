@@ -18,14 +18,14 @@ export const onRegexpParse: OnParse<MutableImportsExports, 2> = (
   _importsExports,
   source,
   parsedToken,
-  {end: regexpEnd, token},
+  {end, token},
 ) => {
   if (token !== '/') {
     return parsedToken.end;
   }
 
-  if (source[regexpEnd] === '*') {
-    return regexpEnd - 1;
+  if (source[end] === '*') {
+    return end - 1;
   }
 
   return;

@@ -1,5 +1,5 @@
 import {parseFrom} from './partParsers.js';
-import {addError, spacesRegExp, stripComments} from './utils.js';
+import {addError, getPosition, spacesRegExp, stripComments} from './utils.js';
 
 import type {
   ExcludeUndefined,
@@ -26,8 +26,8 @@ export const onImportError: OnParse<MutableImportsExports, 1> = (
 export const onImportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
-  {start: importStart, end: unparsedStart, comments},
-  {start: unparsedEnd, end: importEnd, token: endToken},
+  {start, end: unparsedStart, comments},
+  {start: unparsedEnd, end, token: endToken},
 ) => {
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
   const quoteCharacter = endToken[0]!;
@@ -38,12 +38,12 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     return addError(
       importsExports,
       'Cannot find start of `from` string literal of import',
-      importStart,
-      importEnd,
+      start,
+      end,
     );
   }
 
-  const parsedImport: NamedImport | NamespaceImport = {start: importStart, end: importEnd};
+  const parsedImport: NamedImport | NamespaceImport = getPosition(importsExports, start, end);
 
   unparsed = unparsed.slice(0, index).trim().replace(spacesRegExp, ' ');
 
@@ -75,8 +75,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
         return addError(
           importsExports,
           `Cannot find end of imports list (\`}\`) for import from \`${from}\``,
-          importStart,
-          importEnd,
+          start,
+          end,
         );
       }
 
@@ -105,8 +105,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
               `Cannot use \`type\` modifier in \`import type\` statement for type \`${name.slice(
                 5,
               )}\` for import from \`${from}\``,
-              importStart,
-              importEnd,
+              start,
+              end,
             );
           }
 
@@ -129,8 +129,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return addError(
               importsExports,
               `Duplicate imported type \`${name}\` for import from \`${from}\``,
-              importStart,
-              importEnd,
+              start,
+              end,
             );
           }
 
@@ -142,8 +142,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             return addError(
               importsExports,
               `Duplicate imported name \`${name}\` for import from \`${from}\``,
-              importStart,
-              importEnd,
+              start,
+              end,
             );
           }
 
@@ -181,8 +181,8 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
         `Cannot use default \`${unparsed}\` and namespace \`${
           (parsedImport as NamespaceImport).namespace
         }\` together in \`import type\` statement for import from \`${from}\``,
-        importStart,
-        importEnd,
+        start,
+        end,
       );
     }
 

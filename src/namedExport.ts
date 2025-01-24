@@ -1,5 +1,5 @@
 import {parseFrom} from './partParsers.js';
-import {addError, spacesRegExp, stripComments} from './utils.js';
+import {addError, getPosition, spacesRegExp, stripComments} from './utils.js';
 
 import type {
   ExcludeUndefined,
@@ -35,8 +35,8 @@ export const onNamedExportError: OnParse<MutableImportsExports, 1> = (
 export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
-  {start: exportStart, end: unparsedStart, comments, match: startMatch},
-  {start: unparsedEnd, end: exportEnd, match: endMatch},
+  {start, end: unparsedStart, comments, match: startMatch},
+  {start: unparsedEnd, end, match: endMatch},
 ) => {
   let maybeFrom: Path | undefined;
   let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
@@ -49,8 +49,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
-        exportStart,
-        exportEnd,
+        start,
+        end,
       );
     }
 
@@ -63,15 +63,15 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
       return addError(
         importsExports,
         `Cannot find end of reexports list (\`}\`) for reexport from \`${maybeFrom}\``,
-        exportStart,
-        exportEnd,
+        start,
+        end,
       );
     }
 
     unparsed = unparsed.slice(0, braceCloseIndex);
   }
 
-  const namedExport: NamedExport | TypeNamedExport = {start: exportStart, end: exportEnd};
+  const namedExport: NamedExport | TypeNamedExport = getPosition(importsExports, start, end);
   let isTypeExport = false;
 
   if (startMatch.groups!['type'] !== undefined) {
@@ -102,8 +102,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Cannot use \`type\` modifier in \`export type {...}\` statement for type \`${name.slice(
             5,
           )}\`${maybeFrom === undefined ? '' : ` for reexport from \`${maybeFrom}\``}`,
-          exportStart,
-          exportEnd,
+          start,
+          end,
         );
       }
 
@@ -128,8 +128,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Duplicate exported type \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
-          exportStart,
-          exportEnd,
+          start,
+          end,
         );
       }
 
@@ -143,8 +143,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
           `Duplicate exported name \`${name}\` ${
             maybeFrom === undefined ? 'in named export' : `for reexport from \`${maybeFrom}\``
           }`,
-          exportStart,
-          exportEnd,
+          start,
+          end,
         );
       }
 

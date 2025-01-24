@@ -176,4 +176,13 @@ const foo = import( /* 'comment"
     backtickString.errors === undefined && backtickString.requires === undefined,
     'parsed nested string literal started with backtick',
   );
+
+  const withLineColumn = parseImportsExports('import {foo} from "bar"', {includeLineColumn: true});
+  const positionWithLineColumn = withLineColumn.namedImports?.['bar' as Path]?.[0];
+
+  assert(
+    positionWithLineColumn?.startLineColumn === firstChar &&
+      typeof positionWithLineColumn?.endLineColumn === 'string',
+    'respects parse option `includeLineColumn`',
+  );
 };
