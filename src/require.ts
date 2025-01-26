@@ -47,11 +47,11 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
 
   const parsedRequire: Require = getPosition(importsExports, start, end);
 
-  let {requires} = importsExports;
+  var {requires} = importsExports;
 
   requires ??= importsExports.requires = {__proto__: null} as ExcludeUndefined<typeof requires>;
 
-  let requiresList = requires[from];
+  var requiresList = requires[from];
 
   requiresList ??= requires[from] = [];
 

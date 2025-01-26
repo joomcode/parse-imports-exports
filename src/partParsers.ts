@@ -1,4 +1,4 @@
-import type {Name, Path} from './types';
+import type {Name, Path, With} from './types';
 
 type Destructuring = Readonly<{endIndex: number; names: readonly Name[]}> | undefined;
 
@@ -11,11 +11,12 @@ export const parseDestructuring = (sourceStartsWithDestructuring: string): Destr
 
   const names: Name[] = [];
 
-  let bracketsDepth = 1;
-  let isInsideSinglelineComment = false;
-  let isInsideMultilineComment = false;
+  var bracketsDepth = 1;
+  var index = 1;
+  var isInsideSinglelineComment = false;
+  var isInsideMultilineComment = false;
 
-  for (let index = 1; index < sourceStartsWithDestructuring.length; index += 1) {
+  for (; index < sourceStartsWithDestructuring.length; index += 1) {
     const char = sourceStartsWithDestructuring[index]!;
 
     if (isInsideSinglelineComment) {
@@ -76,8 +77,8 @@ export const parseFrom = (
   quoteCharacter: string,
   sourceWithString: string,
 ): Readonly<{from: Path; index: number}> => {
-  let hasBackslash = false;
-  let index = sourceWithString.length - 1;
+  var hasBackslash = false;
+  var index = sourceWithString.length - 1;
 
   for (; index >= 0; index -= 1) {
     const char = sourceWithString[index];
@@ -91,7 +92,7 @@ export const parseFrom = (
     }
   }
 
-  let from = sourceWithString.slice(index + 1) as Path;
+  var from = sourceWithString.slice(index + 1) as Path;
 
   if (hasBackslash) {
     from = from.replace(backslashesRegExp, stripFirstCharacter) as Path;
@@ -115,6 +116,57 @@ export const parseIdentifier = (sourceStartsWithIdentifier: string): number => {
   }
 
   return sourceStartsWithIdentifier.length;
+};
+
+/**
+ * Parses import/reexport attributes in `with`-part of import/reexport (like `with { type: "json" }`).
+ */
+export const parseWith = (
+  startIndex: number,
+  source: string,
+): Readonly<{endIndex: number; with?: With}> | undefined => {
+  const endIndex = source.indexOf('}', startIndex);
+
+  if (endIndex < 0) {
+    return;
+  }
+
+  const withAttributes = {__proto__: null} as unknown as With;
+  const attributesSource = source.slice(startIndex, endIndex).trim();
+
+  if (attributesSource === '') {
+    return {endIndex, with: withAttributes};
+  }
+
+  const attributes = attributesSource.split(',');
+
+  for (const attribute of attributes) {
+    const parts = attribute.split(':');
+
+    if (parts.length !== 2) {
+      return {endIndex};
+    }
+
+    let key: string | undefined = parts[0]!.trim();
+
+    if (key[0] === "'" || key[0] === '"') {
+      key = trimQuotes(key);
+    }
+
+    if (!key) {
+      return {endIndex};
+    }
+
+    const value = trimQuotes(parts[1]!.trim());
+
+    if (!value || key in withAttributes) {
+      return {endIndex};
+    }
+
+    withAttributes[key] = value;
+  }
+
+  return {endIndex, with: withAttributes};
 };
 
 /**
@@ -148,3 +200,25 @@ for (const character of '0123456789') {
  * Strips first character from string.
  */
 const stripFirstCharacter = (someString: string): string => someString.slice(1);
+
+/**
+ * Trims single or double quotes around the string value.
+ * If string is not quoted, returns `undefined`.
+ */
+const trimQuotes = (value: string): string | undefined => {
+  if (value.length < 2) {
+    return;
+  }
+
+  var firstChar = value[0];
+
+  if (firstChar !== "'" && firstChar !== '"') {
+    return;
+  }
+
+  if (firstChar !== value[value.length - 1]) {
+    return;
+  }
+
+  return value.slice(1, -1);
+};

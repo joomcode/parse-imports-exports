@@ -185,4 +185,30 @@ const foo = import( /* 'comment"
       typeof positionWithLineColumn?.endLineColumn === 'string',
     'respects parse option `includeLineColumn`',
   );
+
+  const importWithEmptyAttributes = parseImportsExports('import foo from "bar" with {};');
+
+  assert(
+    Object.keys(importWithEmptyAttributes.namedImports?.['bar' as Path]?.[0]?.with!).length === 0 &&
+      importWithEmptyAttributes.errors === undefined,
+    'parses empty import attributes',
+  );
+
+  const importWithAttributes = parseImportsExports('import qux from "bar" with { type: "json" }');
+
+  assert(
+    importWithAttributes.namedImports?.['bar' as Path]?.[0]?.with?.['type'] === 'json' &&
+      importWithAttributes.errors === undefined,
+    'parses empty import attributes',
+  );
+
+  const importWithManyAttributes = parseImportsExports(
+    "import style from 'bar' with {\"type\":'css'  ,  'value' :  ' some ' }",
+  );
+
+  assertEqualExceptNumbers(
+    importWithManyAttributes,
+    {namedImports: {bar: [{start, end, with: {type: 'css', value: ' some '}, default: 'style'}]}},
+    'parses many import attributes',
+  );
 };

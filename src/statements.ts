@@ -66,7 +66,7 @@ const baseStatements: readonly Statement[] = [
     canIncludeComments: true,
     onError: onImportError as OnParse,
     onParse: onImportParse as OnParse,
-    tokens: ['^import ', '[\'"];?$'],
+    tokens: ['^import ', '([\'"];?$)|(?<with>[\'"] with \\{)'],
     shouldSearchBeforeComments: true,
   },
   {

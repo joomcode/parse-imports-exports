@@ -29,10 +29,10 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   {start, end: unparsedStart, comments},
   {start: unparsedEnd, end},
 ) => {
-  let isDeclare = false;
-  let increasedExportEnd: number | undefined = undefined;
-  let isType = false;
-  let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
+  var isDeclare = false;
+  var increasedExportEnd: number | undefined = undefined;
+  var isType = false;
+  var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
 
   if (unparsed.startsWith('declare ')) {
     isDeclare = true;
@@ -270,8 +270,8 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
     return;
   }
 
-  let isAsync = false;
-  let kind: Kind | undefined;
+  var isAsync = false;
+  var kind: Kind | undefined;
   const names: Name[] = [];
 
   switch (identifier) {
@@ -284,7 +284,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         (identifier === 'const' || identifier === 'let' || identifier === 'var') &&
         (unparsed[0] === '{' || unparsed[0] === '[')
       ) {
-        const destructuring = parseDestructuring(`${unparsed}${source.slice(end)}`);
+        const destructuring = parseDestructuring(unparsed + source.slice(end));
 
         if (destructuring === undefined) {
           return addError(
@@ -457,7 +457,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       );
   }
 
-  let {declarationExports} = importsExports;
+  var {declarationExports} = importsExports;
 
   declarationExports ??= importsExports.declarationExports = {
     __proto__: null,
@@ -469,12 +469,12 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         importsExports,
         `Duplicate exported declaration \`${kind} ${name}\``,
         start,
-        end,
+        increasedExportEnd ?? end,
       );
     }
 
     declarationExports[name!] = {
-      ...getPosition(importsExports, start, end),
+      ...getPosition(importsExports, start, increasedExportEnd ?? end),
       kind: kind!,
     };
   }

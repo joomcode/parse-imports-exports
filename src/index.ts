@@ -41,7 +41,7 @@ export const parseImportsExports = (source: string, options?: Options): ImportsE
     [CONTEXT_KEY]: {lineColumnCache: undefined, linesIndexes: undefined, options, source},
   };
 
-  let parse = parseCache[cacheKey];
+  var parse = parseCache[cacheKey];
 
   if (parse === undefined) {
     const statements = getStatements(options);

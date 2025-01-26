@@ -18,7 +18,7 @@ export const addError = (
   end?: number,
 ): void => {
   const {source} = importsExports[CONTEXT_KEY];
-  let {errors} = importsExports;
+  var {errors} = importsExports;
 
   errors ??= importsExports.errors = {__proto__: null} as unknown as ExcludeUndefined<
     typeof errors
@@ -54,7 +54,7 @@ export const getCacheKey = (options: Options | undefined): string => {
     return '';
   }
 
-  let cacheKey = '';
+  var cacheKey = '';
 
   if (options.ignoreCommonJsExports === true) {
     cacheKey += 'ignoreCommonJsExports';
@@ -107,8 +107,8 @@ export const removeErrorsCausedByOverloading = (importsExports: MutableImportsEx
     return;
   }
 
-  let previousError: string | undefined;
-  let previousLineColumn: LineColumn | undefined;
+  var previousError: string | undefined;
+  var previousLineColumn: LineColumn | undefined;
 
   for (const lineColumn of Object.keys(errors) as LineColumn[]) {
     const error = errors[lineColumn]!;
@@ -150,7 +150,7 @@ export const stripComments = (
     return source.slice(intervalStart, intervalEnd);
   }
 
-  let currentStart = intervalStart;
+  var currentStart = intervalStart;
   const parts: string[] = [];
 
   for (const [{start}, {end}] of comments) {
@@ -171,13 +171,13 @@ const getLineColumnByIndex = (
   {[CONTEXT_KEY]: context}: MutableImportsExports,
   index: number,
 ): LineColumn => {
-  let {lineColumnCache, linesIndexes} = context;
+  var {lineColumnCache, linesIndexes} = context;
 
   lineColumnCache ??= context.lineColumnCache = {__proto__: null} as ExcludeUndefined<
     typeof context.lineColumnCache
   >;
 
-  let lineColumn = lineColumnCache[index];
+  var lineColumn = lineColumnCache[index];
 
   if (lineColumn !== undefined) {
     return lineColumn;

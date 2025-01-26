@@ -48,17 +48,17 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
 
   const parsedImport: DynamicImport = getPosition(importsExports, start, end);
 
-  let key: 'dynamicImports' | 'typeDynamicImports' = 'dynamicImports';
+  var key: 'dynamicImports' | 'typeDynamicImports' = 'dynamicImports';
 
   if (isTypeImport) {
     key = 'typeDynamicImports';
   }
 
-  let imports = importsExports[key];
+  var imports = importsExports[key];
 
   imports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof imports>;
 
-  let importsList = imports[from];
+  var importsList = imports[from];
 
   importsList ??= imports[from] = [];
 

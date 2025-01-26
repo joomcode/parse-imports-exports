@@ -1,4 +1,4 @@
-import {parseFrom} from './partParsers.js';
+import {parseFrom, parseWith} from './partParsers.js';
 import {addError, getPosition, spacesRegExp, stripComments} from './utils.js';
 
 import type {
@@ -9,6 +9,7 @@ import type {
   NamedImport,
   NamespaceImport,
   OnParse,
+  With,
 } from './types';
 
 /**
@@ -27,9 +28,10 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
   {start, end: unparsedStart, comments},
-  {start: unparsedEnd, end, token: endToken},
+  {start: unparsedEnd, end: importEnd, match: endMatch, token: endToken},
 ) => {
-  let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
+  var end = importEnd;
+  var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
   const quoteCharacter = endToken[0]!;
 
   const {from, index} = parseFrom(quoteCharacter, unparsed);
@@ -43,11 +45,9 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     );
   }
 
-  const parsedImport: NamedImport | NamespaceImport = getPosition(importsExports, start, end);
-
   unparsed = unparsed.slice(0, index).trim().replace(spacesRegExp, ' ');
 
-  let isTypeImport = false;
+  var isTypeImport = false;
 
   if (unparsed.startsWith('type ')) {
     isTypeImport = true;
@@ -58,8 +58,49 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     unparsed = unparsed.slice(0, -5);
   }
 
+  var withAttributes: With | undefined;
+
+  if (endMatch.groups!['with'] !== undefined) {
+    if (isTypeImport) {
+      return addError(
+        importsExports,
+        `Cannot use import attributes (\`with {...}\`) in \`import type\` statement for import from \`${from}\``,
+        start,
+        end,
+      );
+    }
+
+    const attributes = parseWith(importEnd, source);
+
+    if (attributes === undefined) {
+      return addError(
+        importsExports,
+        `Cannot find end of import attributes (\`with {...}\`) in \`import\` statement for import from \`${from}\``,
+        start,
+        end,
+      );
+    }
+
+    end = attributes.endIndex;
+    withAttributes = attributes.with;
+
+    if (withAttributes === undefined) {
+      return addError(
+        importsExports,
+        `Cannot parse import attributes (\`with {...}\`) in \`import\` statement for import from \`${from}\``,
+        start,
+        end,
+      );
+    }
+  }
+
+  const position = getPosition(importsExports, start, end);
+
+  const parsedImport: NamedImport | NamespaceImport =
+    withAttributes === undefined ? position : {...position, with: withAttributes};
+
   const namespaceIndex = unparsed.indexOf('* as ');
-  let key: 'namedImports' | 'namespaceImports' | 'typeNamedImports' | 'typeNamespaceImports' =
+  var key: 'namedImports' | 'namespaceImports' | 'typeNamedImports' | 'typeNamespaceImports' =
     'namedImports';
 
   if (namespaceIndex < 0) {
@@ -193,13 +234,15 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     key = key === 'namedImports' ? 'typeNamedImports' : 'typeNamespaceImports';
   }
 
-  let imports = importsExports[key];
+  var imports = importsExports[key];
 
   imports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof imports>;
 
-  let importsList = imports[from];
+  var importsList = imports[from];
 
   importsList ??= imports[from] = [];
 
   (importsList as object[]).push(parsedImport);
+
+  return end;
 };

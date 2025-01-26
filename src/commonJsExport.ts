@@ -29,7 +29,7 @@ export const onCommonJsExportParse: OnParse<MutableImportsExports, 2> = (
   {start, end: unparsedStart, comments, token},
   {start: unparsedEnd, end},
 ) => {
-  let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
+  var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
   const startsWithModule = token[0] === 'm';
 
   if (unparsed[0] === '.') {

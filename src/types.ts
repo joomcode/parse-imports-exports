@@ -95,7 +95,7 @@ export type NamedExport = Position & {names?: Names; types?: Names};
 /**
  * Parsed JSON presentation of `import {...} from ...` statement.
  */
-export type NamedImport = Position & {default?: Name; names?: Names; types?: Names};
+export type NamedImport = Position & {default?: Name; names?: Names; types?: Names; with?: With};
 
 /**
  * Parsed JSON presentation of names in `import`/`export` statements.
@@ -105,7 +105,7 @@ export type Names = Record<Name, {by?: Name}>;
 /**
  * Parsed JSON presentation of `import * as ...` statement.
  */
-export type NamespaceImport = Position & {default?: Name; namespace: Name};
+export type NamespaceImport = Position & {default?: Name; namespace: Name; with?: With};
 
 /**
  * Parsed JSON presentation of `export * as ... from ...` statement.
@@ -195,6 +195,11 @@ export type Statement = BaseStatement<MutableImportsExports>;
  * Parsed JSON presentation of `export type {...}` statement.
  */
 export type TypeNamedExport = Position & {names?: Names};
+
+/**
+ * Import/reexport attributes in `with`-part of import/reexport (like `with { type: "json" }`).
+ */
+export type With = Record<string, string>;
 
 /**
  * Parsed JSON presentation of `(module.)exports.foo = ...` statement.

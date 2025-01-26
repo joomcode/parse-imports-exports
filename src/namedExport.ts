@@ -38,8 +38,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   {start, end: unparsedStart, comments, match: startMatch},
   {start: unparsedEnd, end, match: endMatch},
 ) => {
-  let maybeFrom: Path | undefined;
-  let unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
+  var maybeFrom: Path | undefined;
+  var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
   const {quote} = endMatch.groups as {quote?: string};
 
   if (quote !== undefined) {
@@ -72,7 +72,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   }
 
   const namedExport: NamedExport | TypeNamedExport = getPosition(importsExports, start, end);
-  let isTypeExport = false;
+  var isTypeExport = false;
 
   if (startMatch.groups!['type'] !== undefined) {
     isTypeExport = true;
@@ -81,8 +81,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   const namesString = unparsed.trim().replace(spacesRegExp, ' ');
   const namesList = namesString.split(',') as Name[];
 
-  let names: Names | undefined;
-  let types: Names | undefined;
+  var names: Names | undefined;
+  var types: Names | undefined;
 
   for (let name of namesList) {
     let isType = false;
