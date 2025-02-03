@@ -1,4 +1,4 @@
-import {parseDestructuring, parseFrom, parseIdentifier} from './partParsers.js';
+import {parseDestructuring, parseFrom, parseIdentifier, parseWith} from './partParsers.js';
 import {addError, getPosition, stripComments} from './utils.js';
 
 import type {
@@ -9,6 +9,7 @@ import type {
   NamespaceReexport,
   OnParse,
   StarReexport,
+  With,
 } from './types';
 
 /**
@@ -27,10 +28,10 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
   {start, end: unparsedStart, comments},
-  {start: unparsedEnd, end},
+  {start: unparsedEnd, end: exportEnd, match: endMatch},
 ) => {
+  var end = exportEnd;
   var isDeclare = false;
-  var increasedExportEnd: number | undefined = undefined;
   var isType = false;
   var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments).trim();
 
@@ -63,7 +64,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
       const spaceIndex = unparsed.indexOf(' ');
 
-      if (spaceIndex < 0) {
+      if (spaceIndex === -1) {
         return addError(
           importsExports,
           `Cannot find namespace of \`export ${modifiers}* as ... from ...\` statement`,
@@ -80,35 +81,78 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       unparsed = unparsed.slice(0, -1).trim();
     }
 
-    const quoteCharacter = unparsed[unparsed.length - 1];
+    const {groups} = endMatch as {groups: {readonly with?: string}};
+    let quoteCharacter: string | undefined;
+
+    if (groups.with === undefined) {
+      quoteCharacter = unparsed[unparsed.length - 1];
+      unparsed = unparsed.slice(0, -1);
+    } else {
+      quoteCharacter = groups.with[0];
+    }
+
+    const reexportKind = `${namespace === undefined ? 'star' : 'namespace'} reexport`;
 
     if (quoteCharacter !== "'" && quoteCharacter !== '"') {
       return addError(
         importsExports,
-        'Cannot find end of `from` string literal of reexport',
+        `Cannot find end of \`from\` string literal of ${reexportKind}`,
         start,
         end,
       );
     }
-
-    unparsed = unparsed.slice(0, -1);
 
     const {from, index} = parseFrom(quoteCharacter, unparsed);
 
-    if (index < 0) {
+    if (index === -1) {
       return addError(
         importsExports,
-        'Cannot find start of `from` string literal of reexport',
+        `Cannot find start of \`from\` string literal of ${reexportKind}`,
         start,
         end,
       );
     }
 
-    const parsedReexport: NamespaceReexport | StarReexport = getPosition(
-      importsExports,
-      start,
-      end,
-    );
+    let withAttributes: With | undefined;
+
+    if (groups.with !== undefined) {
+      if (isType) {
+        return addError(
+          importsExports,
+          `Cannot use import attributes (\`with {...}\`) in \`export ${modifiers}\` statement for ${reexportKind} from \`${from}\``,
+          start,
+          end,
+        );
+      }
+
+      const attributes = parseWith(exportEnd, source);
+
+      if (attributes === undefined) {
+        return addError(
+          importsExports,
+          `Cannot find end of import attributes (\`with {...}\`) for ${reexportKind} from \`${from}\``,
+          start,
+          end,
+        );
+      }
+
+      end = attributes.endIndex;
+      withAttributes = attributes.with;
+
+      if (withAttributes === undefined) {
+        return addError(
+          importsExports,
+          `Cannot parse import attributes (\`with {...}\`) for ${reexportKind} from \`${from}\``,
+          start,
+          end,
+        );
+      }
+    }
+
+    const position = getPosition(importsExports, start, end);
+
+    const parsedReexport: NamespaceReexport | StarReexport =
+      withAttributes === undefined ? position : {...position, with: withAttributes};
 
     let key:
       | 'namespaceReexports'
@@ -135,7 +179,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
     (reexportsList as object[]).push(parsedReexport);
 
-    return;
+    return end;
   }
 
   const identifierIndex = parseIdentifier(unparsed);
@@ -298,7 +342,7 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         const endDiff = destructuring.endIndex - unparsed.length;
 
         if (endDiff > 0) {
-          increasedExportEnd = endDiff + end;
+          end += endDiff;
         }
 
         names.push(...destructuring.names);
@@ -469,15 +513,15 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
         importsExports,
         `Duplicate exported declaration \`${kind} ${name}\``,
         start,
-        increasedExportEnd ?? end,
+        end,
       );
     }
 
     declarationExports[name!] = {
-      ...getPosition(importsExports, start, increasedExportEnd ?? end),
+      ...getPosition(importsExports, start, end),
       kind: kind!,
     };
   }
 
-  return increasedExportEnd;
+  return end;
 };

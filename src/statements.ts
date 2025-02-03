@@ -73,14 +73,14 @@ const baseStatements: readonly Statement[] = [
     canIncludeComments: true,
     onError: onNamedExportError as OnParse,
     onParse: onNamedExportParse as OnParse,
-    tokens: ['^export (?<type>type )?\\{', '(\\};?$)|(?<quote>[\'"];?$)'],
+    tokens: ['^export (?<type>type )?\\{', '(\\};?$)|(?<quote>[\'"];?$)|(?<with>[\'"] with \\{)'],
     shouldSearchBeforeComments: true,
   },
   {
     canIncludeComments: true,
     onError: onDeclarationExportError as OnParse,
     onParse: onDeclarationExportParse as OnParse,
-    tokens: ['^export ', '$'],
+    tokens: ['^export ', '($)|(?<with>[\'"] with \\{)'],
     shouldSearchBeforeComments: true,
   },
 ];

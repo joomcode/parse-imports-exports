@@ -163,7 +163,7 @@ const foo = import( /* 'comment"
 
   assert(
     importWithError.errors?.[errorKey]?.split(':')[0] ===
-      "Cannot find start of path string literal of dynamic `import('...')`" &&
+      "Cannot find start of path string literal of dynamic `import('...')` from `\"qux`" &&
       importWithComments.dynamicImports?.['qux' as Path] === undefined,
     'find error in "import(...)" with comments inside',
   );
@@ -194,21 +194,153 @@ const foo = import( /* 'comment"
     'parses empty import attributes',
   );
 
+  const dynamicImportWithAttributes = parseImportsExports(
+    'const foo = await import("qux",  { with: { type : "json" }})',
+  );
+
+  assert(
+    dynamicImportWithAttributes.errors === undefined &&
+      dynamicImportWithAttributes.dynamicImports?.['qux' as Path] !== undefined,
+    'parses "import(...)" with import attributes without errors',
+  );
+
+  assertEqualExceptNumbers(
+    dynamicImportWithAttributes,
+    {dynamicImports: {qux: [{start, end, with: {type: 'json'}}]}},
+    'parses import attributes in dynamic imports',
+  );
+
+  const dynamicImportWithAttributesWithError = parseImportsExports(
+    'import("bar", {with: { type: "json");',
+  );
+
+  assert(
+    getNumberOfKeysWithDefinedValues(dynamicImportWithAttributesWithError) === 1 &&
+      dynamicImportWithAttributesWithError.errors![firstChar]!.startsWith(
+        `Cannot find end of import attributes (\`with: {...}\`) in dynamic \`import("...")\` from \`bar\``,
+      ),
+    'returns correct error of finding end in import attributes for dynamic import',
+  );
+
   const importWithAttributes = parseImportsExports('import qux from "bar" with { type: "json" }');
 
   assert(
     importWithAttributes.namedImports?.['bar' as Path]?.[0]?.with?.['type'] === 'json' &&
       importWithAttributes.errors === undefined,
-    'parses empty import attributes',
+    'parses one import attribute',
   );
 
   const importWithManyAttributes = parseImportsExports(
-    "import style from 'bar' with {\"type\":'css'  ,  'value' :  ' some ' }",
+    `import {
+  style
+} from 'bar' with {"type":'css'  ,  'value' :  ' some ' }`,
   );
 
   assertEqualExceptNumbers(
     importWithManyAttributes,
-    {namedImports: {bar: [{start, end, with: {type: 'css', value: ' some '}, default: 'style'}]}},
+    {namedImports: {bar: [{start, end, with: {type: 'css', value: ' some '}, names: {style: {}}}]}},
     'parses many import attributes',
+  );
+
+  const importWithAttributesWithError = parseImportsExports(
+    'import qux from "bar" with { type: "json";',
+  );
+
+  assert(
+    getNumberOfKeysWithDefinedValues(importWithAttributesWithError) === 1 &&
+      importWithAttributesWithError.errors![firstChar]!.startsWith(
+        `Cannot find end of import attributes (\`with {...}\`) in \`import\` statement for import from \`bar\``,
+      ),
+    'returns correct error of finding end in import attributes',
+  );
+
+  const namedReexportWithEmptyAttributes = parseImportsExports('export {foo} from "bar" with {}');
+
+  assert(
+    Object.keys(namedReexportWithEmptyAttributes.namedReexports?.['bar' as Path]?.[0]?.with!)
+      .length === 0 && namedReexportWithEmptyAttributes.errors === undefined,
+    'parses empty import attributes for named reexport',
+  );
+
+  const namedReexportWithAttributes = parseImportsExports(
+    'export { qux } from "bar" with {type :  "json"};',
+  );
+
+  assert(
+    namedReexportWithAttributes.namedReexports?.['bar' as Path]?.[0]?.with?.['type'] === 'json' &&
+      namedReexportWithAttributes.errors === undefined,
+    'parses one import attribute for named reexport',
+  );
+
+  const namedReexportWithManyAttributes = parseImportsExports(
+    `export {
+  style
+} from 'bar' with { "type" :'css' ,  'value':  ' some '};`,
+  );
+
+  assertEqualExceptNumbers(
+    namedReexportWithManyAttributes,
+    {
+      namedReexports: {
+        bar: [{start, end, names: {style: {}}, with: {type: 'css', value: ' some '}}],
+      },
+    },
+    'parses many import attributes for named reexport',
+  );
+
+  const namedReexportWithAttributesWithError = parseImportsExports(
+    'export {qux} from "bar" with { type: "json";',
+  );
+
+  assert(
+    getNumberOfKeysWithDefinedValues(namedReexportWithAttributesWithError) === 1 &&
+      namedReexportWithAttributesWithError.errors![firstChar]!.startsWith(
+        `Cannot find end of import attributes (\`with {...}\`) for reexport from \`bar\``,
+      ),
+    'returns correct error of finding end in import attributes for named reexport',
+  );
+
+  const declarationReexportWithEmptyAttributes = parseImportsExports('export * from "bar" with {}');
+
+  assert(
+    Object.keys(declarationReexportWithEmptyAttributes.starReexports?.['bar' as Path]?.[0]?.with!)
+      .length === 0 && declarationReexportWithEmptyAttributes.errors === undefined,
+    'parses empty import attributes for declaration reexport',
+  );
+
+  const declarationReexportWithAttributes = parseImportsExports(
+    `export * as 'qux' from "bar" with {type :  "json"};`,
+  );
+
+  assert(
+    declarationReexportWithAttributes.namespaceReexports?.['bar' as Path]?.[0]?.with?.['type'] ===
+      'json' && declarationReexportWithAttributes.errors === undefined,
+    'parses one import attribute for declaration reexport',
+  );
+
+  const declarationReexportWithManyAttributes = parseImportsExports(
+    `export * as style from 'bar' with { "type" :'css' ,  'value':  ' some '};`,
+  );
+
+  assertEqualExceptNumbers(
+    declarationReexportWithManyAttributes,
+    {
+      namespaceReexports: {
+        bar: [{start, end, with: {type: 'css', value: ' some '}, namespace: 'style'}],
+      },
+    },
+    'parses many import attributes for declaration reexport',
+  );
+
+  const declarationReexportWithAttributesWithError = parseImportsExports(
+    'export * from "bar" with { type: "json";',
+  );
+
+  assert(
+    getNumberOfKeysWithDefinedValues(declarationReexportWithAttributesWithError) === 1 &&
+      declarationReexportWithAttributesWithError.errors![firstChar]!.startsWith(
+        `Cannot find end of import attributes (\`with {...}\`) for star reexport from \`bar\``,
+      ),
+    'returns correct error of finding end in import attributes declaration reexport',
   );
 };

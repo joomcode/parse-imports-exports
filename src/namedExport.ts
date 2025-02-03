@@ -1,4 +1,4 @@
-import {parseFrom} from './partParsers.js';
+import {parseFrom, parseWith} from './partParsers.js';
 import {addError, getPosition, spacesRegExp, stripComments} from './utils.js';
 
 import type {
@@ -7,9 +7,12 @@ import type {
   Name,
   Names,
   NamedExport,
+  NamedReexport,
   OnParse,
   Path,
   TypeNamedExport,
+  TypeNamedReexport,
+  With,
 } from './types';
 
 /**
@@ -36,16 +39,26 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   importsExports,
   source,
   {start, end: unparsedStart, comments, match: startMatch},
-  {start: unparsedEnd, end, match: endMatch},
+  {start: unparsedEnd, end: exportEnd, match: endMatch},
 ) => {
+  var end = exportEnd;
   var maybeFrom: Path | undefined;
   var unparsed = stripComments(source, unparsedStart, unparsedEnd, comments);
-  const {quote} = endMatch.groups as {quote?: string};
+  const {groups} = endMatch as {groups: {quote?: string; with?: string}};
+  const quote = groups.quote ?? groups.with;
+
+  var isType = false;
+
+  if (startMatch.groups!['type'] !== undefined) {
+    isType = true;
+  }
+
+  var withAttributes: With | undefined;
 
   if (quote !== undefined) {
     const {from, index} = parseFrom(quote[0]!, unparsed);
 
-    if (index < 0) {
+    if (index === -1) {
       return addError(
         importsExports,
         'Cannot find start of `from` string literal of reexport',
@@ -59,7 +72,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
 
     const braceCloseIndex = unparsed.lastIndexOf('}');
 
-    if (braceCloseIndex < 0) {
+    if (braceCloseIndex === -1) {
       return addError(
         importsExports,
         `Cannot find end of reexports list (\`}\`) for reexport from \`${maybeFrom}\``,
@@ -69,14 +82,43 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     }
 
     unparsed = unparsed.slice(0, braceCloseIndex);
+
+    if (groups.with !== undefined) {
+      if (isType) {
+        return addError(
+          importsExports,
+          `Cannot use import attributes (\`with {...}\`) in \`export type\` statement for reexport from \`${from}\``,
+          start,
+          end,
+        );
+      }
+
+      const attributes = parseWith(exportEnd, source);
+
+      if (attributes === undefined) {
+        return addError(
+          importsExports,
+          `Cannot find end of import attributes (\`with {...}\`) for reexport from \`${from}\``,
+          start,
+          end,
+        );
+      }
+
+      end = attributes.endIndex;
+      withAttributes = attributes.with;
+
+      if (withAttributes === undefined) {
+        return addError(
+          importsExports,
+          `Cannot parse import attributes (\`with {...}\`) for reexport from \`${from}\``,
+          start,
+          end,
+        );
+      }
+    }
   }
 
   const namedExport: NamedExport | TypeNamedExport = getPosition(importsExports, start, end);
-  var isTypeExport = false;
-
-  if (startMatch.groups!['type'] !== undefined) {
-    isTypeExport = true;
-  }
 
   const namesString = unparsed.trim().replace(spacesRegExp, ' ');
   const namesList = namesString.split(',') as Name[];
@@ -85,7 +127,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   var types: Names | undefined;
 
   for (let name of namesList) {
-    let isType = false;
+    let isTypeName = false;
 
     name = name.trim() as Name;
 
@@ -96,7 +138,7 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     const nameObject: Names[Name] = {};
 
     if (name.startsWith('type ')) {
-      if (isTypeExport) {
+      if (isType) {
         return addError(
           importsExports,
           `Cannot use \`type\` modifier in \`export type {...}\` statement for type \`${name.slice(
@@ -107,19 +149,19 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
         );
       }
 
-      isType = true;
+      isTypeName = true;
       name = name.slice(5) as Name;
     }
 
     const asIndex = name.indexOf(' as ');
 
-    if (asIndex >= 0) {
+    if (asIndex !== -1) {
       nameObject.by = name.slice(0, asIndex) as Name;
 
       name = name.slice(asIndex + 4) as Name;
     }
 
-    if (isType) {
+    if (isTypeName) {
       if (types === undefined) {
         types = {__proto__: null} as Names;
       } else if (name in types) {
@@ -161,14 +203,16 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
   }
 
   if (maybeFrom === undefined) {
-    const key = isTypeExport ? 'typeNamedExports' : 'namedExports';
+    const key = isType ? 'typeNamedExports' : 'namedExports';
     let exports = importsExports[key];
 
     exports ??= importsExports[key] = [];
 
     (exports as NamedExport[]).push(namedExport);
   } else {
-    const key = isTypeExport ? 'typeNamedReexports' : 'namedReexports';
+    const key = isType ? 'typeNamedReexports' : 'namedReexports';
+    const namedReexport: NamedReexport | TypeNamedReexport =
+      withAttributes === undefined ? namedExport : {...namedExport, with: withAttributes};
     let reexports = importsExports[key];
 
     reexports ??= importsExports[key] = {__proto__: null} as ExcludeUndefined<typeof reexports>;
@@ -177,6 +221,8 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
 
     reexportsList ??= reexports[maybeFrom] = [];
 
-    (reexportsList as object[]).push(namedExport);
+    (reexportsList as object[]).push(namedReexport);
   }
+
+  return end;
 };

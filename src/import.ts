@@ -36,7 +36,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   const {from, index} = parseFrom(quoteCharacter, unparsed);
 
-  if (index < 0) {
+  if (index === -1) {
     return addError(
       importsExports,
       'Cannot find start of `from` string literal of import',
@@ -47,10 +47,10 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   unparsed = unparsed.slice(0, index).trim().replace(spacesRegExp, ' ');
 
-  var isTypeImport = false;
+  var isType = false;
 
   if (unparsed.startsWith('type ')) {
-    isTypeImport = true;
+    isType = true;
     unparsed = unparsed.slice(5);
   }
 
@@ -61,7 +61,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
   var withAttributes: With | undefined;
 
   if (endMatch.groups!['with'] !== undefined) {
-    if (isTypeImport) {
+    if (isType) {
       return addError(
         importsExports,
         `Cannot use import attributes (\`with {...}\`) in \`import type\` statement for import from \`${from}\``,
@@ -103,16 +103,16 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
   var key: 'namedImports' | 'namespaceImports' | 'typeNamedImports' | 'typeNamespaceImports' =
     'namedImports';
 
-  if (namespaceIndex < 0) {
+  if (namespaceIndex === -1) {
     const braceIndex = unparsed.indexOf('{');
 
-    if (braceIndex >= 0) {
+    if (braceIndex !== -1) {
       let namesString = unparsed.slice(braceIndex + 1);
       const braceCloseIndex = namesString.lastIndexOf('}');
 
       unparsed = unparsed.slice(0, braceIndex);
 
-      if (braceCloseIndex < 0) {
+      if (braceCloseIndex === -1) {
         return addError(
           importsExports,
           `Cannot find end of imports list (\`}\`) for import from \`${from}\``,
@@ -129,7 +129,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
       let types: Names | undefined;
 
       for (let name of namesList) {
-        let isType = false;
+        let isTypeName = false;
 
         name = name.trim() as Name;
 
@@ -140,7 +140,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
         const nameObject: Names[Name] = {};
 
         if (name.startsWith('type ')) {
-          if (isTypeImport) {
+          if (isType) {
             return addError(
               importsExports,
               `Cannot use \`type\` modifier in \`import type\` statement for type \`${name.slice(
@@ -151,19 +151,19 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
             );
           }
 
-          isType = true;
+          isTypeName = true;
           name = name.slice(5) as Name;
         }
 
         const asIndex = name.indexOf(' as ');
 
-        if (asIndex >= 0) {
+        if (asIndex !== -1) {
           nameObject.by = name.slice(0, asIndex) as Name;
 
           name = name.slice(asIndex + 4) as Name;
         }
 
-        if (isType) {
+        if (isTypeName) {
           if (types === undefined) {
             types = {__proto__: null} as Names;
           } else if (name in types) {
@@ -209,14 +209,14 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   const commaIndex = unparsed.indexOf(',');
 
-  if (commaIndex >= 0) {
+  if (commaIndex !== -1) {
     unparsed = unparsed.slice(0, commaIndex).trim();
   } else {
     unparsed = unparsed.trim();
   }
 
   if (unparsed !== '') {
-    if (isTypeImport && key === 'namespaceImports') {
+    if (isType && key === 'namespaceImports') {
       return addError(
         importsExports,
         `Cannot use default \`${unparsed}\` and namespace \`${
@@ -230,7 +230,7 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
     parsedImport.default = unparsed as Name;
   }
 
-  if (isTypeImport) {
+  if (isType) {
     key = key === 'namedImports' ? 'typeNamedImports' : 'typeNamespaceImports';
   }
 

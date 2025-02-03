@@ -29,7 +29,7 @@ export type ContextKey = typeof CONTEXT_KEY;
 /**
  * Parsed JSON presentation of `import(...)` statement.
  */
-export type DynamicImport = Position;
+export type DynamicImport = Position & {with?: With};
 
 /**
  * Excludes `undefined` from some `Type`.
@@ -98,6 +98,11 @@ export type NamedExport = Position & {names?: Names; types?: Names};
 export type NamedImport = Position & {default?: Name; names?: Names; types?: Names; with?: With};
 
 /**
+ * Parsed JSON presentation of `export {...} from ...` statement.
+ */
+export type NamedReexport = Position & {names?: Names; types?: Names; with?: With};
+
+/**
  * Parsed JSON presentation of names in `import`/`export` statements.
  */
 export type Names = Record<Name, {by?: Name}>;
@@ -110,7 +115,7 @@ export type NamespaceImport = Position & {default?: Name; namespace: Name; with?
 /**
  * Parsed JSON presentation of `export * as ... from ...` statement.
  */
-export type NamespaceReexport = Position & {namespace: Name};
+export type NamespaceReexport = Position & {namespace: Name; with?: With};
 
 /**
  * Options of `parseImportsExports` function.
@@ -184,7 +189,7 @@ export type Require = Position;
 /**
  * Parsed JSON presentation of `export * from ...` statement.
  */
-export type StarReexport = Position;
+export type StarReexport = Position & {with?: With};
 
 /**
  * Type of statement for parse options.
@@ -195,6 +200,11 @@ export type Statement = BaseStatement<MutableImportsExports>;
  * Parsed JSON presentation of `export type {...}` statement.
  */
 export type TypeNamedExport = Position & {names?: Names};
+
+/**
+ * Parsed JSON presentation of `export type {...} from ...` statement.
+ */
+export type TypeNamedReexport = Position & {names?: Names};
 
 /**
  * Import/reexport attributes in `with`-part of import/reexport (like `with { type: "json" }`).
@@ -380,11 +390,6 @@ type MutableImportsExportsWithoutContext = {
 };
 
 /**
- * Parsed JSON presentation of `export {...} from ...` statement.
- */
-type NamedReexport = Position & {names?: Names; types?: Names};
-
-/**
  * Parsed JSON presentation of `export namespace ...` statement.
  */
 type NamespaceExport = Position & {isDeclare?: true};
@@ -398,11 +403,6 @@ type TypeExport = Position & {isDeclare?: true};
  * Parsed JSON presentation of `import type {...} from ...` statement.
  */
 type TypeNamedImport = Position & {default?: Name; names?: Names};
-
-/**
- * Parsed JSON presentation of `export type {...} from ...` statement.
- */
-type TypeNamedReexport = Position & {names?: Names};
 
 /**
  * Parsed JSON presentation of `import type * as ...` statement.

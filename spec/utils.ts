@@ -32,7 +32,7 @@ export const assertEqualExceptNumbers: AssertEqualExceptNumbers = (actual, expec
     const errors = {__proto__: null} as unknown as Record<string, string>;
 
     for (const key in originalErrors) {
-      errors[key] = originalErrors[key]!.split(':')[0]!;
+      errors[key] = originalErrors[key]!.split(':\n')[0]!;
     }
 
     actual.errors = errors;

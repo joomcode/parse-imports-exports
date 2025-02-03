@@ -80,7 +80,7 @@ export const parseFrom = (
   var hasBackslash = false;
   var index = sourceWithString.length - 1;
 
-  for (; index >= 0; index -= 1) {
+  for (; index !== -1; index -= 1) {
     const char = sourceWithString[index];
 
     if (char === '\\') {
@@ -127,7 +127,7 @@ export const parseWith = (
 ): Readonly<{endIndex: number; with?: With}> | undefined => {
   const endIndex = source.indexOf('}', startIndex);
 
-  if (endIndex < 0) {
+  if (endIndex === -1) {
     return;
   }
 

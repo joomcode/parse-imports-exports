@@ -119,6 +119,34 @@ import type { isPrototypeOf}from "@types/prototype"
 import __proto__, *  as  __proto__  from "prototype";
 import  propertyIsEnumerable , *  as  toString  from'prototype'
 
+import styles from './styles.css' with {type: 'css'};
+
+import type * as css from './fooStyles.css' with {type: 'css'};
+import css from './barStyles.css' with {type: css};
+import asloCss from './bazStyles.css' with { type: "css'};
+
+const foo = await import(
+  './static/styles.css',
+  {with: {type: 'css'}},
+);
+
+type T = typeof import('./static/fooStyles.css', { with: { type : 'css'}});
+
+import('./static/barStyles.css', {with: {type: css}});
+import("./static/bazStyles.css", {with: {type: "css'}});
+
+export { styles } from './style.css' with {type: 'css'};
+
+export type {css} from './fooStyle.css' with {type: 'css'};
+export {css} from './barStyle.css' with {type: css};
+export { asloCss } from './bazStyle.css' with { type: "css'};
+
+export * as styles from './css/style.css' with {type :'css'};
+
+export type * from './css/fooStyle.css' with {type: 'css'};
+export *  from  './css/barStyle.css' with {type: css};
+export * as asloCss from "./css/bazStyle.css" with { type: "css'};
+
 export const __proto__ = 42
 export   var  valueOf =  'corge' ; 
 
@@ -369,6 +397,7 @@ export {__proto__}`);
             names: {['PROTO' as Name]: {}, ['prototype' as Name]: {by: 'PROTO' as Name}},
           },
         ],
+        ['./styles.css' as Path]: [{start, end, with: {type: 'css'}, default: 'styles' as Name}],
       },
 
       namespaceImports: {
@@ -381,6 +410,7 @@ export {__proto__}`);
       },
 
       dynamicImports: {
+        ['./static/styles.css' as Path]: [{start, end, with: {type: 'css'}}],
         ['foo' as Path]: [
           {start, end},
           {start, end},
@@ -410,6 +440,7 @@ export {__proto__}`);
       },
 
       typeDynamicImports: {
+        ['./static/fooStyles.css' as Path]: [{start, end, with: {type: 'css'}}],
         ['jquery' as Path]: [
           {start, end},
           {start, end},
@@ -430,10 +461,18 @@ export {__proto__}`);
             types: {['Target' as Name]: {by: 'ScriptTarget' as Name}},
           },
         ],
+        ['./style.css' as Path]: [
+          {start, end, names: {['styles' as Name]: {}}, with: {type: 'css'}},
+        ],
         ['properties' as Path]: [{start, end, types: {['propertyIsEnumerable' as Name]: {}}}],
       },
 
-      namespaceReexports: {['qux' as Path]: [{start, end, namespace: 'FullQux' as Name}]},
+      namespaceReexports: {
+        ['qux' as Path]: [{start, end, namespace: 'FullQux' as Name}],
+        ['./css/style.css' as Path]: [
+          {start, end, with: {type: 'css'}, namespace: 'styles' as Name},
+        ],
+      },
 
       starReexports: {['quux' as Path]: [{start, end}]},
 
@@ -573,6 +612,17 @@ export {__proto__}`);
         'Cannot use default `Foo` and namespace `Bar` together in `import type` statement for import from `typescript`',
         'Duplicate exported type `Foo` in named export',
         'Duplicate exported type `Foo` for reexport from `Foo`',
+        'Cannot use import attributes (`with {...}`) in `import type` statement for import from `./fooStyles.css`',
+        'Cannot parse import attributes (`with {...}`) in `import` statement for import from `./barStyles.css`',
+        'Cannot parse import attributes (`with {...}`) in `import` statement for import from `./bazStyles.css`',
+        "Cannot parse import attributes (`with: {...}`) for dynamic `import('...')` from `./static/barStyles.css`",
+        'Cannot parse import attributes (`with: {...}`) for dynamic `import(\"...\")` from `./static/bazStyles.css`',
+        'Cannot use import attributes (`with {...}`) in `export type` statement for reexport from `./fooStyle.css`',
+        'Cannot parse import attributes (`with {...}`) for reexport from `./barStyle.css`',
+        'Cannot parse import attributes (`with {...}`) for reexport from `./bazStyle.css`',
+        'Cannot use import attributes (`with {...}`) in `export type ` statement for star reexport from `./css/fooStyle.css`',
+        'Cannot parse import attributes (`with {...}`) for star reexport from `./css/barStyle.css`',
+        'Cannot parse import attributes (`with {...}`) for namespace reexport from `./css/bazStyle.css`',
         'Cannot use `type` modifier in `export type {...}` statement for type `Foo`',
         'Cannot use `type` modifier in `export type {...}` statement for type `Bar as Baz` for reexport from `Baz`',
         'Cannot find start of `from` string literal of import',
@@ -581,10 +631,10 @@ export {__proto__}`);
         'Duplicate exported name `__proto__` for reexport from `parser`',
         'Cannot find end of reexports list (`}`) for reexport from `./bar`',
         'Duplicate exported declaration `function* __proto__`',
-        'Cannot find end of `from` string literal of reexport',
-        'Cannot find end of `from` string literal of reexport',
-        'Cannot find start of `from` string literal of reexport',
-        'Cannot find start of `from` string literal of reexport',
+        'Cannot find end of `from` string literal of star reexport',
+        'Cannot find end of `from` string literal of namespace reexport',
+        'Cannot find start of `from` string literal of star reexport',
+        'Cannot find start of `from` string literal of namespace reexport',
         'Cannot parse declaration identifier of `export type ...` statement',
         'Cannot parse declaration identifier of `export ...` statement',
         'Duplicate exported type `T`',
@@ -615,8 +665,8 @@ export {__proto__}`);
         'Duplicate exported declaration `async function quadrupleF`',
         'Cannot parse destructuring names in `export const ...` statement',
         'Cannot find end of `import` statement',
-        'Cannot find start of path string literal of dynamic `import("...")`',
-        "Cannot find start of path string literal of dynamic `import('...')` of type",
+        'Cannot find start of path string literal of dynamic `import("...")` from `\'qux`',
+        "Cannot find start of path string literal of dynamic `import('...')` of type from `\"qux`",
         'Duplicate exported name `baz` in `module.exports.... = ...` statement',
         'Cannot parse identifier of `exports.... = ...` statement',
         '`exports = ...` is not valid CommonJS namespace export (use `module.exports = ...` instead)',
