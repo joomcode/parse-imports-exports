@@ -1,6 +1,6 @@
 {
   "name": "parse-imports-exports",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Fast and easy parser for declarations of import and export in ECMAScript/TypeScript",
   "author": "uid11",
   "bugs": "https://github.com/joomcode/parse-imports-exports/issues",

@@ -250,7 +250,10 @@ type DefaultExport = Position;
  * Readonly type with recursive applying.
  * `DeepReadonly<{foo: {bar: 0}}>` = `{readonly foo: {readonly bar: 0}}`.
  */
-type DeepReadonly<Type> = {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>};
+type DeepReadonly<Type> =
+  Type extends Brand<unknown, string>
+    ? Type
+    : {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>};
 
 /**
  * Parsed JSON presentation of `export interface ...` statement.
