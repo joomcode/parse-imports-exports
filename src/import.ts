@@ -240,9 +240,11 @@ export const onImportParse: OnParse<MutableImportsExports, 2> = (
 
   var importsList = imports[from];
 
-  importsList ??= imports[from] = [];
-
-  (importsList as object[]).push(parsedImport);
+  if (importsList === undefined) {
+    imports[from] = [parsedImport];
+  } else {
+    (importsList as [NamedImport]).push(parsedImport);
+  }
 
   return end;
 };

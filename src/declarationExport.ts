@@ -3,9 +3,11 @@ import {addError, getPosition, stripComments} from './utils.js';
 
 import type {
   ExcludeUndefined,
+  InterfaceExport,
   Kind,
   MutableImportsExports,
   Name,
+  NamespaceExport,
   NamespaceReexport,
   OnParse,
   StarReexport,
@@ -175,9 +177,11 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
 
     let reexportsList = reexports[from];
 
-    reexportsList ??= reexports[from] = [];
-
-    (reexportsList as object[]).push(parsedReexport);
+    if (reexportsList === undefined) {
+      reexports[from] = [parsedReexport];
+    } else {
+      (reexportsList as [StarReexport]).push(parsedReexport);
+    }
 
     return end;
   }
@@ -256,21 +260,19 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       typeof interfaceExports
     >;
 
-    let exportsList = interfaceExports[name];
-
-    exportsList ??= interfaceExports[name] = [];
-
-    const interfaceExport: ExcludeUndefined<typeof exportsList>[number] = getPosition(
-      importsExports,
-      start,
-      end,
-    );
+    const interfaceExport: InterfaceExport = getPosition(importsExports, start, end);
 
     if (isDeclare) {
       interfaceExport.isDeclare = true;
     }
 
-    (exportsList as object[]).push(interfaceExport);
+    let exportsList = interfaceExports[name];
+
+    if (exportsList === undefined) {
+      interfaceExports[name] = [interfaceExport];
+    } else {
+      (exportsList as [InterfaceExport]).push(interfaceExport);
+    }
 
     return;
   }
@@ -295,21 +297,19 @@ export const onDeclarationExportParse: OnParse<MutableImportsExports, 2> = (
       typeof namespaceExports
     >;
 
-    let exportsList = namespaceExports[name];
-
-    exportsList ??= namespaceExports[name] = [];
-
-    const namespaceExport: ExcludeUndefined<typeof exportsList>[number] = getPosition(
-      importsExports,
-      start,
-      end,
-    );
+    const namespaceExport: NamespaceExport = getPosition(importsExports, start, end);
 
     if (isDeclare) {
       namespaceExport.isDeclare = true;
     }
 
-    (exportsList as object[]).push(namespaceExport);
+    let exportsList = namespaceExports[name];
+
+    if (exportsList === undefined) {
+      namespaceExports[name] = [namespaceExport];
+    } else {
+      (exportsList as [NamespaceExport]).push(namespaceExport);
+    }
 
     return;
   }

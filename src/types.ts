@@ -42,6 +42,11 @@ export type ExcludeUndefined<Type> = Exclude<Type, undefined>;
 export type ImportsExports = DeepReadonly<MutableImportsExportsWithoutContext>;
 
 /**
+ * Parsed JSON presentation of `export interface ...` statement.
+ */
+export type InterfaceExport = Position & {isDeclare?: true};
+
+/**
  * Kind of exported declaration.
  */
 export type Kind =
@@ -164,6 +169,11 @@ export type Options = Readonly<{
   includeLineColumn?: boolean;
 }>;
 
+/**
+ * Parsed JSON presentation of `export namespace ...` statement.
+ */
+export type NamespaceExport = Position & {isDeclare?: true};
+
 export type {ParseOptions};
 
 /**
@@ -256,11 +266,6 @@ type DeepReadonly<Type> =
     : {readonly [Key in keyof Type]: DeepReadonly<Type[Key]>};
 
 /**
- * Parsed JSON presentation of `export interface ...` statement.
- */
-type InterfaceExport = Position & {isDeclare?: true};
-
-/**
  * Mutable parsed JSON presentation of imports, exports and reexports of module.
  */
 type MutableImportsExportsWithoutContext = {
@@ -271,37 +276,37 @@ type MutableImportsExportsWithoutContext = {
   /**
    * `import {...} from ...`.
    */
-  namedImports: Record<Path, readonly NamedImport[]> | undefined;
+  namedImports: Record<Path, NotEmptyArray<NamedImport>> | undefined;
 
   /**
    * `import * as ...`.
    */
-  namespaceImports: Record<Path, readonly NamespaceImport[]> | undefined;
+  namespaceImports: Record<Path, NotEmptyArray<NamespaceImport>> | undefined;
 
   /**
    * `import(...)`.
    */
-  dynamicImports: Record<Path, readonly DynamicImport[]> | undefined;
+  dynamicImports: Record<Path, NotEmptyArray<DynamicImport>> | undefined;
 
   /**
    * `require(...)`.
    */
-  requires: Record<Path, readonly Require[]> | undefined;
+  requires: Record<Path, NotEmptyArray<Require>> | undefined;
 
   /**
    * `import type {...} from ...`.
    */
-  typeNamedImports: Record<Path, readonly TypeNamedImport[]> | undefined;
+  typeNamedImports: Record<Path, NotEmptyArray<TypeNamedImport>> | undefined;
 
   /**
    * `import type * as ...`.
    */
-  typeNamespaceImports: Record<Path, readonly TypeNamespaceImport[]> | undefined;
+  typeNamespaceImports: Record<Path, NotEmptyArray<TypeNamespaceImport>> | undefined;
 
   /**
    * `typeof import(...)`.
    */
-  typeDynamicImports: Record<Path, readonly DynamicImport[]> | undefined;
+  typeDynamicImports: Record<Path, NotEmptyArray<DynamicImport>> | undefined;
 
   /**
    * Reexports.
@@ -310,32 +315,32 @@ type MutableImportsExportsWithoutContext = {
   /**
    * `export {...} from ...`.
    */
-  namedReexports: Record<Path, readonly NamedReexport[]> | undefined;
+  namedReexports: Record<Path, NotEmptyArray<NamedReexport>> | undefined;
 
   /**
    * `export * as ... from ...`.
    */
-  namespaceReexports: Record<Path, readonly NamespaceReexport[]> | undefined;
+  namespaceReexports: Record<Path, NotEmptyArray<NamespaceReexport>> | undefined;
 
   /**
    * `export * from ...`.
    */
-  starReexports: Record<Path, readonly StarReexport[]> | undefined;
+  starReexports: Record<Path, NotEmptyArray<StarReexport>> | undefined;
 
   /**
    * `export type {...} from ...`.
    */
-  typeNamedReexports: Record<Path, readonly TypeNamedReexport[]> | undefined;
+  typeNamedReexports: Record<Path, NotEmptyArray<TypeNamedReexport>> | undefined;
 
   /**
    * `export type * as ... from ...`.
    */
-  typeNamespaceReexports: Record<Path, readonly TypeNamespaceReexport[]> | undefined;
+  typeNamespaceReexports: Record<Path, NotEmptyArray<TypeNamespaceReexport>> | undefined;
 
   /**
    * `export type * from ...`.
    */
-  typeStarReexports: Record<Path, readonly TypeStarReexport[]> | undefined;
+  typeStarReexports: Record<Path, NotEmptyArray<TypeStarReexport>> | undefined;
 
   /**
    * Exports.
@@ -349,7 +354,7 @@ type MutableImportsExportsWithoutContext = {
   /**
    * `export {...}`.
    */
-  namedExports: readonly NamedExport[] | undefined;
+  namedExports: NotEmptyArray<NamedExport> | undefined;
 
   /**
    * `export (class|const|function|var...) ...`.
@@ -359,7 +364,7 @@ type MutableImportsExportsWithoutContext = {
   /**
    * `export type {...}`.
    */
-  typeNamedExports: readonly TypeNamedExport[] | undefined;
+  typeNamedExports: NotEmptyArray<TypeNamedExport> | undefined;
 
   /**
    * `export type ...`.
@@ -369,12 +374,12 @@ type MutableImportsExportsWithoutContext = {
   /**
    * `export interface ...`.
    */
-  interfaceExports: Record<Name, readonly InterfaceExport[]> | undefined;
+  interfaceExports: Record<Name, NotEmptyArray<InterfaceExport>> | undefined;
 
   /**
    * `export namespace ...`.
    */
-  namespaceExports: Record<Name, readonly NamespaceExport[]> | undefined;
+  namespaceExports: Record<Name, NotEmptyArray<NamespaceExport>> | undefined;
 
   /**
    * `module.exports = ...`.
@@ -393,9 +398,9 @@ type MutableImportsExportsWithoutContext = {
 };
 
 /**
- * Parsed JSON presentation of `export namespace ...` statement.
+ * Readonly array with at least one element.
  */
-type NamespaceExport = Position & {isDeclare?: true};
+type NotEmptyArray<Element> = readonly [Element, ...Element[]];
 
 /**
  * Parsed JSON presentation of `export type ...` statement.

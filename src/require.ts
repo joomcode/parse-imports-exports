@@ -53,7 +53,9 @@ export const onRequireParse: OnParse<MutableImportsExports, 3> = (
 
   var requiresList = requires[from];
 
-  requiresList ??= requires[from] = [];
-
-  (requiresList as Require[]).push(parsedRequire);
+  if (requiresList === undefined) {
+    requires[from] = [parsedRequire];
+  } else {
+    (requiresList as [Require]).push(parsedRequire);
+  }
 };

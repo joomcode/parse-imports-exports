@@ -206,9 +206,11 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
     const key = isType ? 'typeNamedExports' : 'namedExports';
     let exports = importsExports[key];
 
-    exports ??= importsExports[key] = [];
-
-    (exports as NamedExport[]).push(namedExport);
+    if (exports === undefined) {
+      importsExports[key] = [namedExport];
+    } else {
+      (exports as [NamedExport]).push(namedExport);
+    }
   } else {
     const key = isType ? 'typeNamedReexports' : 'namedReexports';
     const namedReexport: NamedReexport | TypeNamedReexport =
@@ -219,9 +221,11 @@ export const onNamedExportParse: OnParse<MutableImportsExports, 2> = (
 
     let reexportsList = reexports[maybeFrom];
 
-    reexportsList ??= reexports[maybeFrom] = [];
-
-    (reexportsList as object[]).push(namedReexport);
+    if (reexportsList === undefined) {
+      reexports[maybeFrom] = [namedReexport];
+    } else {
+      (reexportsList as [NamedReexport]).push(namedReexport);
+    }
   }
 
   return end;

@@ -97,7 +97,9 @@ export const onDynamicImportParse: OnParse<MutableImportsExports, 3> = (
 
   var importsList = imports[from];
 
-  importsList ??= imports[from] = [];
-
-  (importsList as DynamicImport[]).push(parsedImport);
+  if (importsList === undefined) {
+    imports[from] = [parsedImport];
+  } else {
+    (importsList as [DynamicImport]).push(parsedImport);
+  }
 };
